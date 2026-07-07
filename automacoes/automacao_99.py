@@ -1,10 +1,11 @@
 import re
 import time
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
 from appium import webdriver
 from appium.options.android import UiAutomator2Options
+from appium.webdriver import Remote as AppiumDriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -15,12 +16,12 @@ from modelos.corrida import Corrida
 
 
 class Automacao99(BaseAutomacao):
-    def __init__(self, config_appium: dict):
+    def __init__(self, config_appium: dict[str, str]):
         self.server = config_appium['server']
         self.device = config_appium['device']
         self.app_package = config_appium['app_package']
-        self.driver = None
-        self.wait = None
+        self.driver: Optional[AppiumDriver] = None
+        self.wait: Optional[WebDriverWait] = None
 
     def conectar(self) -> None:
         options = UiAutomator2Options()
@@ -42,13 +43,14 @@ class Automacao99(BaseAutomacao):
         )
 
     def coletar_precos(self, destino: str) -> List[Corrida]:
-        # 1. Clicar em "Para onde vamos?"
+        assert self.driver is not None
+        assert self.wait is not None
+
         botao = self.wait.until(
             EC.element_to_be_clickable((By.ID, "com.taxis99:id/oc_home_where_to_tv"))
         )
         botao.click()
 
-        # 2. Digitar destino
         self.wait.until(
             EC.presence_of_element_located((By.ID, "com.taxis99:id/input_shadow"))
         )
@@ -56,7 +58,6 @@ class Automacao99(BaseAutomacao):
         campo_texto.clear()
         campo_texto.send_keys(destino)
 
-        # Capturar origem (Local de embarque)
         try:
             origem = self.driver.find_element(
                 By.ID, "com.taxis99:id/et_start"
@@ -64,7 +65,6 @@ class Automacao99(BaseAutomacao):
         except Exception:
             origem = "N/A"
 
-        # 3. Selecionar sugestão (com retry para StaleElementReferenceException)
         self.wait.until(
             EC.presence_of_element_located((By.ID, "com.taxis99:id/layout_item"))
         )
@@ -79,7 +79,6 @@ class Automacao99(BaseAutomacao):
             except Exception:
                 time.sleep(1)
 
-        # 4. Aguardar ofertas e extrair preços
         self.wait.until(
             EC.presence_of_element_located((By.ID, "com.taxis99:id/anycar_item_container"))
         )
@@ -100,7 +99,8 @@ class Automacao99(BaseAutomacao):
                 estimativa_texto = card.find_element(
                     By.ID, "com.taxis99:id/mix_eta_tv"
                 ).text
-                estimativa_min = int(re.search(r'(\d+)\s*min', estimativa_texto).group(1))
+                match = re.search(r'(\d+)\s*min', estimativa_texto)
+                estimativa_min = int(match.group(1)) if match else 0
 
                 resultados.append(Corrida(
                     app="99",
@@ -119,6 +119,8 @@ class Automacao99(BaseAutomacao):
         return resultados
 
     def voltar_tela_inicial(self) -> None:
+        assert self.driver is not None
+
         for tentativa in range(4):
             self.driver.back()
             time.sleep(2)
