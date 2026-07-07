@@ -29,7 +29,9 @@ class Automacao99(BaseAutomacao):
         options.automation_name = 'UiAutomator2'
         options.device_name = self.device
         options.app_package = self.app_package
+        options.app_wait_duration = 60000
         options.no_reset = True
+        options.set_capability('appWaitForLaunch', False)
 
         print("Conectando ao Appium Server...")
         self.driver = webdriver.Remote(self.server, options=options)
@@ -38,9 +40,16 @@ class Automacao99(BaseAutomacao):
         self.wait = WebDriverWait(self.driver, 20)
 
         print("Aguardando app carregar...")
-        self.wait.until(
-            EC.presence_of_element_located((By.ID, "com.taxis99:id/oc_home_where_to_tv"))
-        )
+        try:
+            self.wait.until(
+                EC.presence_of_element_located((By.ID, "com.taxis99:id/oc_home_where_to_tv"))
+            )
+        except Exception:
+            print("App não abriu automaticamente, tentando abrir manualmente...")
+            self.driver.activate_app(self.app_package)
+            self.wait.until(
+                EC.presence_of_element_located((By.ID, "com.taxis99:id/oc_home_where_to_tv"))
+            )
 
     def coletar_precos(self, destino: str) -> List[Corrida]:
         assert self.driver is not None
