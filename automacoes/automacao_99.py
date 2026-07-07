@@ -96,10 +96,10 @@ class Automacao99(BaseAutomacao):
                 preco = card.find_element(
                     By.ID, "com.taxis99:id/new_estimate_price_text_tv"
                 ).text
-                estimativa_texto = card.find_element(
+                estimativa_label = card.find_element(
                     By.ID, "com.taxis99:id/mix_eta_tv"
                 ).text
-                match = re.search(r'(\d+)\s*min', estimativa_texto)
+                match = re.search(r'(\d+)\s*min', estimativa_label)
                 estimativa_min = int(match.group(1)) if match else 0
 
                 resultados.append(Corrida(
@@ -110,8 +110,8 @@ class Automacao99(BaseAutomacao):
                     origem=origem,
                     destino=destino,
                     timestamp=datetime.now(),
-                    preco_texto=preco,
-                    estimativa_texto=estimativa_texto,
+                    preco_label=preco,
+                    estimativa_label=estimativa_label,
                 ))
             except Exception:
                 continue

@@ -12,8 +12,8 @@ class Corrida:
     origem: str
     destino: str
     timestamp: datetime
-    preco_texto: str = ""
-    estimativa_texto: str = ""
+    preco_label: str = ""
+    estimativa_label: str = ""
 
     def para_dict(self) -> dict:
         return {
@@ -23,8 +23,8 @@ class Corrida:
             "estimativa_min": self.estimativa,
             "origem": self.origem,
             "destino": self.destino,
-            "preco_texto": self.preco_texto,
-            "estimativa_texto": self.estimativa_texto,
+            "preco_label": self.preco_label,
+            "estimativa_label": self.estimativa_label,
         }
 
 

@@ -42,6 +42,21 @@ class RepositorioBanco(BaseRepositorio):
         for c in corridas:
             print(f"  -> {c.categoria}: R${c.preco} ({c.estimativa} min)")
 
+    def listar_todos(self) -> List[Snapshot]:
+        cursor = self.conn.execute(
+            "SELECT id, timestamp, device_model, payload_json "
+            "FROM snapshots ORDER BY timestamp"
+        )
+        return [
+            Snapshot(
+                id=row[0],
+                timestamp=datetime.fromisoformat(row[1]),
+                device_model=row[2] or '',
+                payload=json.loads(row[3]),
+            )
+            for row in cursor.fetchall()
+        ]
+
     def consultar_por_periodo(self, inicio: datetime, fim: datetime) -> List[Snapshot]:
         cursor = self.conn.execute(
             "SELECT id, timestamp, device_model, payload_json "
