@@ -1,7 +1,7 @@
 import json
 import sqlite3
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
 from persistencia.base import BaseRepositorio
 from modelos.corrida import Corrida, Snapshot
@@ -10,10 +10,11 @@ from modelos.corrida import Corrida, Snapshot
 class RepositorioBanco(BaseRepositorio):
     def __init__(self, caminho: str):
         self.caminho = caminho
-        self.conn = None
+        self.conn: Optional[sqlite3.Connection] = None
 
     def inicializar(self) -> None:
         self.conn = sqlite3.connect(self.caminho)
+        assert self.conn is not None
         self.conn.execute("""
             CREATE TABLE IF NOT EXISTS snapshots (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -29,6 +30,7 @@ class RepositorioBanco(BaseRepositorio):
     def salvar(self, corridas: List[Corrida], rodada: int, device_model: str = '') -> None:
         if not corridas:
             return
+        assert self.conn is not None
 
         timestamp = corridas[0].timestamp.isoformat()
         payload = json.dumps([c.para_dict() for c in corridas], ensure_ascii=False)
@@ -43,6 +45,7 @@ class RepositorioBanco(BaseRepositorio):
             print(f"  -> {c.categoria}: R${c.preco} ({c.estimativa} min)")
 
     def listar_todos(self) -> List[Snapshot]:
+        assert self.conn is not None
         cursor = self.conn.execute(
             "SELECT id, timestamp, device_model, payload_json "
             "FROM snapshots ORDER BY timestamp"
@@ -56,36 +59,6 @@ class RepositorioBanco(BaseRepositorio):
             )
             for row in cursor.fetchall()
         ]
-
-    def consultar_por_periodo(self, inicio: datetime, fim: datetime) -> List[Snapshot]:
-        cursor = self.conn.execute(
-            "SELECT id, timestamp, device_model, payload_json "
-            "FROM snapshots WHERE timestamp BETWEEN ? AND ? ORDER BY timestamp",
-            (inicio.isoformat(), fim.isoformat())
-        )
-        return [
-            Snapshot(
-                id=row[0],
-                timestamp=datetime.fromisoformat(row[1]),
-                device_model=row[2] or '',
-                payload=json.loads(row[3]),
-            )
-            for row in cursor.fetchall()
-        ]
-
-    def exportar_json(self, inicio: datetime, fim: datetime, caminho: str) -> None:
-        snapshots = self.consultar_por_periodo(inicio, fim)
-        dados = [
-            {
-                "id": s.id,
-                "timestamp": s.timestamp.isoformat(),
-                "resultados": s.payload,
-            }
-            for s in snapshots
-        ]
-        with open(caminho, "w", encoding="utf-8") as f:
-            json.dump(dados, f, ensure_ascii=False, indent=2)
-        print(f"Exportados {len(dados)} snapshots para {caminho}")
 
     def fechar(self) -> None:
         if self.conn:
