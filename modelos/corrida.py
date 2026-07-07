@@ -7,6 +7,7 @@ class Corrida:
     app: str
     categoria: str
     preco: float
-    estimativa: str
+    estimativa: int
+    origem: str
     destino: str
     timestamp: datetime

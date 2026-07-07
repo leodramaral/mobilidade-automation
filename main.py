@@ -3,6 +3,7 @@ import time
 
 from automacoes.automacao_99 import Automacao99
 from persistencia.repositorio_arquivo import RepositorioArquivo
+from persistencia.repositorio_banco import RepositorioBanco
 
 
 def carregar_config(caminho="config.json"):
@@ -17,12 +18,13 @@ def criar_automacao(config):
 
 
 def criar_repositorio(config):
-    if config['persistencia']['tipo'] == 'arquivo':
-        return RepositorioArquivo(
-            config['persistencia']['caminho'],
-            config['persistencia'].get('formato', 'markdown')
-        )
-    raise ValueError(f"Persistência não suportada: {config['persistencia']['tipo']}")
+    tipo = config['persistencia']['tipo']
+    caminho = config['persistencia']['caminho']
+    if tipo == 'arquivo':
+        return RepositorioArquivo(caminho, config['persistencia'].get('formato', 'markdown'))
+    if tipo == 'banco':
+        return RepositorioBanco(caminho)
+    raise ValueError(f"Persistência não suportada: {tipo}")
 
 
 def main():
@@ -50,6 +52,8 @@ def main():
         print("\nColeta interrompida.")
     finally:
         automacao.desconectar()
+        if hasattr(repositorio, 'fechar'):
+            repositorio.fechar()
 
 
 if __name__ == "__main__":

@@ -1,5 +1,10 @@
 .mimocode
 
+# Bancos de dados locais
+*.db
+*.sqlite
+*.sqlite3
+
 # Python cache
 __pycache__/
 *.pyc

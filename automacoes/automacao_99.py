@@ -1,3 +1,4 @@
+import re
 import time
 from datetime import datetime
 from typing import List
@@ -53,6 +54,14 @@ class Automacao99(BaseAutomacao):
         campo_texto.clear()
         campo_texto.send_keys(destino)
 
+        # Capturar origem (Local de embarque)
+        try:
+            origem = self.driver.find_element(
+                By.ID, "com.taxis99:id/et_start"
+            ).text
+        except Exception:
+            origem = "N/A"
+
         # 3. Selecionar sugestão (com retry para StaleElementReferenceException)
         self.wait.until(
             EC.presence_of_element_located((By.ID, "com.taxis99:id/layout_item"))
@@ -86,14 +95,17 @@ class Automacao99(BaseAutomacao):
                 preco = card.find_element(
                     By.ID, "com.taxis99:id/new_estimate_price_text_tv"
                 ).text
-                estimativa = card.find_element(
+                estimativa_texto = card.find_element(
                     By.ID, "com.taxis99:id/mix_eta_tv"
                 ).text
+                estimativa_min = int(re.search(r'(\d+)\s*min', estimativa_texto).group(1))
+
                 resultados.append(Corrida(
                     app="99",
                     categoria=categoria,
                     preco=float(preco.replace(".", "").replace(",", ".")),
-                    estimativa=estimativa,
+                    estimativa=estimativa_min,
+                    origem=origem,
                     destino=destino,
                     timestamp=datetime.now(),
                 ))

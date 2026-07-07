@@ -1,7 +1,7 @@
 {
   "app": "99",
   "destino": "Amazonas Shopping",
-  "limite_consultas": 120,
+  "limite_consultas": 2,
   "intervalo_segundos": 20,
   "appium": {
     "server": "http://127.0.0.1:4723",
@@ -9,8 +9,7 @@
     "app_package": "com.taxis99"
   },
   "persistencia": {
-    "tipo": "arquivo",
-    "caminho": "dados_corridas.md",
-    "formato": "markdown"
+    "tipo": "banco",
+    "caminho": "mobilidade.db"
   }
 }
