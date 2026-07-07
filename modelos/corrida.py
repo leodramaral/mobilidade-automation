@@ -32,4 +32,5 @@ class Corrida:
 class Snapshot:
     id: int
     timestamp: datetime
+    device_model: str
     payload: List[dict]

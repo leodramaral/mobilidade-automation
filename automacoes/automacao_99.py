@@ -32,6 +32,8 @@ class Automacao99(BaseAutomacao):
 
         print("Conectando ao Appium Server...")
         self.driver = webdriver.Remote(self.server, options=options)
+        self.device_model = self.driver.capabilities.get('deviceModel', 'desconhecido')
+        print(f"Dispositivo conectado: {self.device_model}")
         self.wait = WebDriverWait(self.driver, 20)
 
         print("Aguardando app carregar...")

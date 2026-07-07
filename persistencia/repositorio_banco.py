@@ -18,13 +18,15 @@ class RepositorioBanco(BaseRepositorio):
             CREATE TABLE IF NOT EXISTS snapshots (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 timestamp TEXT NOT NULL,
+                device_model TEXT,
                 payload_json TEXT NOT NULL
             )
         """)
         self.conn.execute("CREATE INDEX IF NOT EXISTS idx_snapshots_timestamp ON snapshots(timestamp)")
+        self.conn.execute("CREATE INDEX IF NOT EXISTS idx_snapshots_device ON snapshots(device_model)")
         self.conn.commit()
 
-    def salvar(self, corridas: List[Corrida], rodada: int) -> None:
+    def salvar(self, corridas: List[Corrida], rodada: int, device_model: str = '') -> None:
         if not corridas:
             return
 
@@ -32,8 +34,8 @@ class RepositorioBanco(BaseRepositorio):
         payload = json.dumps([c.para_dict() for c in corridas], ensure_ascii=False)
 
         self.conn.execute(
-            "INSERT INTO snapshots (timestamp, payload_json) VALUES (?, ?)",
-            (timestamp, payload)
+            "INSERT INTO snapshots (timestamp, device_model, payload_json) VALUES (?, ?, ?)",
+            (timestamp, device_model, payload)
         )
         self.conn.commit()
 
@@ -42,7 +44,7 @@ class RepositorioBanco(BaseRepositorio):
 
     def consultar_por_periodo(self, inicio: datetime, fim: datetime) -> List[Snapshot]:
         cursor = self.conn.execute(
-            "SELECT id, timestamp, payload_json "
+            "SELECT id, timestamp, device_model, payload_json "
             "FROM snapshots WHERE timestamp BETWEEN ? AND ? ORDER BY timestamp",
             (inicio.isoformat(), fim.isoformat())
         )
@@ -50,7 +52,8 @@ class RepositorioBanco(BaseRepositorio):
             Snapshot(
                 id=row[0],
                 timestamp=datetime.fromisoformat(row[1]),
-                payload=json.loads(row[2]),
+                device_model=row[2] or '',
+                payload=json.loads(row[3]),
             )
             for row in cursor.fetchall()
         ]

@@ -17,7 +17,7 @@ class RepositorioArquivo(BaseRepositorio):
                 f"Início da coleta: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}\n\n"
             )
 
-    def salvar(self, corridas: List[Corrida], rodada: int) -> None:
+    def salvar(self, corridas: List[Corrida], rodada: int, device_model: str = '') -> None:
         agora = datetime.now().strftime('%H:%M:%S')
         with open(self.caminho, "a", encoding="utf-8") as f:
             f.write(f"### Consulta {rodada} - {agora}\n")

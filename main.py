@@ -34,6 +34,7 @@ def main():
 
     repositorio.inicializar()
     automacao.conectar()
+    device_model = automacao.device_model
 
     try:
         for rodada in range(1, config['limite_consultas'] + 1):
@@ -41,7 +42,7 @@ def main():
             print(f"\n[{agora}] Iniciando rodada {rodada}/{config['limite_consultas']}...")
 
             corridas = automacao.coletar_precos(config['destino'])
-            repositorio.salvar(corridas, rodada)
+            repositorio.salvar(corridas, rodada, device_model)
 
             automacao.voltar_tela_inicial()
 
