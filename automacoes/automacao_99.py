@@ -108,6 +108,8 @@ class Automacao99(BaseAutomacao):
                     origem=origem,
                     destino=destino,
                     timestamp=datetime.now(),
+                    preco_texto=preco,
+                    estimativa_texto=estimativa_texto,
                 ))
             except Exception:
                 continue
