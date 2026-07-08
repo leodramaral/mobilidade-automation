@@ -96,12 +96,18 @@ class Automacao99(BaseAutomacao):
             By.ID, "com.taxis99:id/anycar_item_container"
         )
 
+        CATEGORIAS_PERMITIDAS = {"moto", "pop", "pop expresso", "plus"}
+
         resultados = []
-        for card in conteineres[:4]:
+        for card in conteineres:
             try:
                 categoria = card.find_element(
                     By.ID, "com.taxis99:id/anycar_item_car_name"
                 ).text
+
+                if categoria.lower() not in CATEGORIAS_PERMITIDAS:
+                    continue
+
                 preco = card.find_element(
                     By.ID, "com.taxis99:id/new_estimate_price_text_tv"
                 ).text
