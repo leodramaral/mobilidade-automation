@@ -108,9 +108,11 @@ class AutomacaoUber(BaseAutomacao):
 
                 preco_str = ""
                 for parte in partes:
-                    if "Preço:" in parte:
-                        preco_str = parte.replace("Preço:", "").replace("R$", "").strip()
+                    if "Desconto de" in parte:
+                        preco_str = parte.replace("Desconto de", "").replace("R$", "").strip()
                         break
+                    elif "Preço:" in parte:
+                        preco_str = parte.replace("Preço:", "").replace("R$", "").strip()
 
                 if not preco_str:
                     continue
