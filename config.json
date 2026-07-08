@@ -1,13 +1,18 @@
 {
-  "app": "99",
   "origem": "Condominio Parque Ville Municipal",
   "destino": "Edifício The Office Avenida Mario Ypiranga, 315",
   "limite_consultas": 2,
   "intervalo_segundos": 20,
   "appium": {
     "server": "http://127.0.0.1:4723",
-    "device": "MotoG86",
-    "app_package": "com.taxis99"
+    "99": {
+      "active": true,
+      "app_package": "com.taxis99"
+    },
+    "uber": {
+      "active": false,
+      "app_package": "com.ubercab"
+    }
   },
   "persistencia": {
     "tipo": "banco",

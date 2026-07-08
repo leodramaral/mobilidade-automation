@@ -60,7 +60,6 @@ with st.sidebar:
     if not coletando:
         if st.button("Iniciar Coleta", use_container_width=True):
             config_coleta = {
-                "app": config["app"],
                 "origem": origem,
                 "destino": destino,
                 "limite_consultas": int(limite_consultas),

@@ -18,7 +18,6 @@ from modelos.corrida import Corrida
 class Automacao99(BaseAutomacao):
     def __init__(self, config_appium: dict[str, str]):
         self.server = config_appium['server']
-        self.device = config_appium['device']
         self.app_package = config_appium['app_package']
         self.driver: Optional[AppiumDriver] = None
         self.wait: Optional[WebDriverWait] = None
@@ -27,7 +26,6 @@ class Automacao99(BaseAutomacao):
         options = UiAutomator2Options()
         options.platform_name = 'Android'
         options.automation_name = 'UiAutomator2'
-        options.device_name = self.device
         options.app_package = self.app_package
         options.app_wait_duration = 60000
         options.no_reset = True
