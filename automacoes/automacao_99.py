@@ -77,17 +77,28 @@ class Automacao99(BaseAutomacao):
                 EC.presence_of_element_located((By.ID, "com.taxis99:id/layout_item"))
             )
 
-            for tentativa in range(3):
-                try:
-                    primeiro_resultado = self.driver.find_element(
-                        By.ID, "com.taxis99:id/layout_item"
-                    )
-                    primeiro_resultado.click()
-                    break
-                except Exception:
-                    time.sleep(1)
+            time.sleep(1)
+            try:
+                page_source = self.driver.page_source
+                root = ET.fromstring(page_source)
+                nome = ""
+                endereco = ""
+                for elem in root.iter():
+                    rid = elem.get('resource-id', '')
+                    if rid == 'com.taxis99:id/sug_name':
+                        nome = elem.get('text', '')
+                    elif rid == 'com.taxis99:id/sug_addr':
+                        endereco = elem.get('text', '')
+                        break
+                if nome and endereco:
+                    origem = f"{nome}, {endereco}"
+            except Exception:
+                pass
+
+            self.driver.find_element(By.ID, "com.taxis99:id/layout_item").click()
 
         time.sleep(1)
+
         campo_destino = WebDriverWait(self.driver, 10).until(
             EC.element_to_be_clickable((By.ID, "com.taxis99:id/et_end"))
         )
@@ -95,26 +106,31 @@ class Automacao99(BaseAutomacao):
         campo_destino.clear()
         campo_destino.send_keys(destino)
 
-        try:
-            origem = self.driver.find_element(
-                By.ID, "com.taxis99:id/et_start"
-            ).text
-        except Exception:
-            origem = "N/A"
-
         self.wait.until(
             EC.presence_of_element_located((By.ID, "com.taxis99:id/layout_item"))
         )
 
-        for tentativa in range(3):
-            try:
-                primeiro_resultado = self.driver.find_element(
-                    By.ID, "com.taxis99:id/layout_item"
-                )
-                primeiro_resultado.click()
-                break
-            except Exception:
-                time.sleep(1)
+        time.sleep(1)
+        try:
+            page_source = self.driver.page_source
+            root = ET.fromstring(page_source)
+            nome = ""
+            endereco = ""
+            for elem in root.iter():
+                rid = elem.get('resource-id', '')
+                if rid == 'com.taxis99:id/sug_name':
+                    nome = elem.get('text', '')
+                elif rid == 'com.taxis99:id/sug_addr':
+                    endereco = elem.get('text', '')
+                    break
+            if nome and endereco:
+                destino = f"{nome}, {endereco}"
+        except Exception:
+            pass
+
+        self.driver.find_element(By.ID, "com.taxis99:id/layout_item").click()
+
+        time.sleep(1)
 
         self._fechar_dialog_amigo()
 
