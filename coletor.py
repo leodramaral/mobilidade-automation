@@ -45,21 +45,11 @@ class Coletor:
         repositorio = criar_repositorio(self.config)
         repositorio.inicializar()
 
-        automacoes = {}
-        for app in apps_ativos:
-            automacoes[app] = criar_automacao(app, self.config)
-
-        self.status_callback("Conectando ao Appium...")
-        for app in apps_ativos:
-            automacoes[app].conectar()
-
-        device_model = list(automacoes.values())[0].device_model
-        self.status_callback(f"Conectado: {device_model}")
+        device_model = None
 
         try:
             for rodada in range(1, self.config['limite_consultas'] + 1):
                 if self._parar:
-                    self.status_callback("Coleta interrompida pelo usuário.")
                     break
 
                 self.rodada_atual = rodada
@@ -67,14 +57,19 @@ class Coletor:
                 self.status_callback(f"[{agora}] Rodada {rodada}/{self.total_rodadas}...")
 
                 for app in apps_ativos:
-                    automacao = automacoes[app]
+                    automacao = criar_automacao(app, self.config)
+                    automacao.conectar()
+                    if device_model is None:
+                        device_model = automacao.device_model
+                        self.status_callback(f"Conectado: {device_model}")
+
                     self.status_callback(f"Coletando preços do {app.upper()}...")
                     corridas = automacao.coletar_precos(
                         self.config['destino'],
                         origem=self.config.get('origem', ''),
                     )
                     repositorio.salvar(corridas, rodada, device_model)
-                    automacao.voltar_tela_inicial()
+                    automacao.desconectar()
 
                 self.status_callback(f"Rodada {rodada} concluída.")
 
@@ -84,8 +79,6 @@ class Coletor:
         except Exception as e:
             self.status_callback(f"Erro na coleta: {e}")
         finally:
-            for automacao in automacoes.values():
-                automacao.desconectar()
             if hasattr(repositorio, 'fechar'):
                 repositorio.fechar()
             self.status_callback("Coleta finalizada.")

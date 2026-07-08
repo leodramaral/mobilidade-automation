@@ -1,5 +1,6 @@
 import re
 import time
+import xml.etree.ElementTree as ET
 from datetime import datetime
 from typing import List, Optional
 
@@ -9,7 +10,6 @@ from appium.webdriver import Remote as AppiumDriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import StaleElementReferenceException
 
 from automacoes.base import BaseAutomacao
 from modelos.corrida import Corrida
@@ -122,29 +122,38 @@ class Automacao99(BaseAutomacao):
             EC.presence_of_element_located((By.ID, "com.taxis99:id/anycar_item_container"))
         )
 
-        conteineres = self.driver.find_elements(
-            By.ID, "com.taxis99:id/anycar_item_container"
-        )
-
         CATEGORIAS_PERMITIDAS = {"moto", "pop", "pop expresso", "plus"}
-
         resultados = []
-        for card in conteineres:
-            try:
-                categoria = card.find_element(
-                    By.ID, "com.taxis99:id/anycar_item_car_name"
-                ).text
 
-                if categoria.lower() not in CATEGORIAS_PERMITIDAS:
+        page_source = self.driver.page_source
+        root = ET.fromstring(page_source)
+
+        containers = []
+        for elem in root.iter():
+            if elem.get('resource-id') == 'com.taxis99:id/anycar_item_container':
+                containers.append(elem)
+
+        for container in containers:
+            try:
+                categoria = None
+                preco = None
+                estimativa_label = None
+
+                for child in container.iter():
+                    rid = child.get('resource-id', '')
+                    if rid == 'com.taxis99:id/anycar_item_car_name':
+                        categoria = child.get('text', '')
+                    elif rid == 'com.taxis99:id/new_estimate_price_text_tv':
+                        preco = child.get('text', '')
+                    elif rid == 'com.taxis99:id/mix_eta_tv':
+                        estimativa_label = child.get('text', '')
+
+                if not categoria or categoria.lower() not in CATEGORIAS_PERMITIDAS:
+                    continue
+                if not preco:
                     continue
 
-                preco = card.find_element(
-                    By.ID, "com.taxis99:id/new_estimate_price_text_tv"
-                ).text
-                estimativa_label = card.find_element(
-                    By.ID, "com.taxis99:id/mix_eta_tv"
-                ).text
-                match = re.search(r'(\d+)\s*min', estimativa_label)
+                match = re.search(r'(\d+)\s*min', estimativa_label or '')
                 estimativa_min = int(match.group(1)) if match else 0
 
                 resultados.append(Corrida(
@@ -156,7 +165,7 @@ class Automacao99(BaseAutomacao):
                     destino=destino,
                     timestamp=datetime.now(),
                     preco_label=preco,
-                    estimativa_label=estimativa_label,
+                    estimativa_label=estimativa_label or "",
                 ))
             except Exception:
                 continue
@@ -200,5 +209,5 @@ class Automacao99(BaseAutomacao):
 
     def desconectar(self) -> None:
         if self.driver:
-            print("Encerrando sessão...")
+            self.driver.terminate_app(self.app_package)
             self.driver.quit()

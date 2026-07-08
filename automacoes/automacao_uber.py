@@ -155,4 +155,5 @@ class AutomacaoUber(BaseAutomacao):
 
     def desconectar(self) -> None:
         if self.driver:
+            self.driver.terminate_app(self.app_package)
             self.driver.quit()
