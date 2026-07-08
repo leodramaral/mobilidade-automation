@@ -47,7 +47,10 @@ class Coletor:
                 agora = time.strftime('%H:%M:%S')
                 self.status_callback(f"[{agora}] Rodada {rodada}/{self.total_rodadas}...")
 
-                corridas = automacao.coletar_precos(self.config['destino'])
+                corridas = automacao.coletar_precos(
+                    self.config['destino'],
+                    origem=self.config.get('origem', ''),
+                )
                 repositorio.salvar(corridas, rodada, device_model)
 
                 self.status_callback(f"Rodada {rodada} concluída: {len(corridas)} corridas coletadas.")

@@ -36,6 +36,12 @@ with st.sidebar:
     coletando = st.session_state.get("coletando", False)
 
     destino = st.text_input("Destino", value=config.get("destino", ""), disabled=coletando)
+    origem = st.text_input(
+        "Origem",
+        value=config.get("origem", ""),
+        placeholder="Deixe vazio para usar a atual",
+        disabled=coletando,
+    )
     limite_consultas = st.number_input(
         "Limite de consultas",
         min_value=1,
@@ -55,6 +61,7 @@ with st.sidebar:
         if st.button("Iniciar Coleta", use_container_width=True):
             config_coleta = {
                 "app": config["app"],
+                "origem": origem,
                 "destino": destino,
                 "limite_consultas": int(limite_consultas),
                 "intervalo_segundos": int(intervalo_segundos),

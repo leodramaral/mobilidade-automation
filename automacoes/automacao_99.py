@@ -51,7 +51,7 @@ class Automacao99(BaseAutomacao):
                 EC.presence_of_element_located((By.ID, "com.taxis99:id/oc_home_where_to_tv"))
             )
 
-    def coletar_precos(self, destino: str) -> List[Corrida]:
+    def coletar_precos(self, destino: str, origem: str = "") -> List[Corrida]:
         assert self.driver is not None
         assert self.wait is not None
 
@@ -63,9 +63,39 @@ class Automacao99(BaseAutomacao):
         self.wait.until(
             EC.presence_of_element_located((By.ID, "com.taxis99:id/input_shadow"))
         )
-        campo_texto = self.driver.switch_to.active_element
-        campo_texto.clear()
-        campo_texto.send_keys(destino)
+
+        if origem:
+            campo_origem = self.wait.until(
+                EC.element_to_be_clickable((By.ID, "com.taxis99:id/et_start"))
+            )
+            campo_origem.click()
+
+            time.sleep(1)
+            campo_texto = self.driver.switch_to.active_element
+            campo_texto.clear()
+            campo_texto.send_keys(origem)
+
+            self.wait.until(
+                EC.presence_of_element_located((By.ID, "com.taxis99:id/layout_item"))
+            )
+
+            for tentativa in range(3):
+                try:
+                    primeiro_resultado = self.driver.find_element(
+                        By.ID, "com.taxis99:id/layout_item"
+                    )
+                    primeiro_resultado.click()
+                    break
+                except Exception:
+                    time.sleep(1)
+
+        time.sleep(1)
+        campo_destino = WebDriverWait(self.driver, 10).until(
+            EC.element_to_be_clickable((By.ID, "com.taxis99:id/et_end"))
+        )
+        campo_destino.click()
+        campo_destino.clear()
+        campo_destino.send_keys(destino)
 
         try:
             origem = self.driver.find_element(
@@ -87,6 +117,8 @@ class Automacao99(BaseAutomacao):
                 break
             except Exception:
                 time.sleep(1)
+
+        self._fechar_dialog_amigo()
 
         self.wait.until(
             EC.presence_of_element_located((By.ID, "com.taxis99:id/anycar_item_container"))
@@ -132,6 +164,25 @@ class Automacao99(BaseAutomacao):
                 continue
 
         return resultados
+
+    def _fechar_dialog_amigo(self) -> None:
+        assert self.driver is not None
+        try:
+            time.sleep(2)
+            botao = WebDriverWait(self.driver, 5).until(
+                EC.element_to_be_clickable((By.ID, "com.taxis99:id/s_call_close_img"))
+            )
+            botao.click()
+            print("Dialog 'Pedindo para um amigo' detectado e fechado.")
+            time.sleep(3)
+        except Exception:
+            try:
+                time.sleep(1)
+                self.driver.tap([(628, 718)])
+                print("Dialog 'Pedindo para um amigo' fechado via tap coordenado.")
+                time.sleep(3)
+            except Exception:
+                pass
 
     def voltar_tela_inicial(self) -> None:
         assert self.driver is not None
