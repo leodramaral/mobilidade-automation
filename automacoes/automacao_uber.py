@@ -55,55 +55,15 @@ class AutomacaoUber(BaseAutomacao):
         botao.click()
 
         if origem:
-            container_pickup = self.wait.until(
-                EC.element_to_be_clickable((By.ID, "com.ubercab:id/ub__location_edit_search_container_pickup"))
+            origem = self._preencher_campo(
+                origem, "com.ubercab:id/ub__location_edit_search_container_pickup"
             )
-            container_pickup.click()
-            time.sleep(0.5)
-
-            campo_texto = self.driver.find_element(By.ID, "com.ubercab:id/edit_text")
-            campo_texto.clear()
-            campo_texto.send_keys(origem)
-
-            container_resultados = self.wait.until(
-                EC.presence_of_element_located((By.ID, "com.ubercab:id/ub__text_search_v2_results"))
-            )
-
-            for tentativa in range(3):
-                try:
-                    primeiro_resultado = container_resultados.find_element(
-                        By.XPATH, ".//android.widget.Button[@content-desc]"
-                    )
-                    origem = primeiro_resultado.get_attribute("content-desc")
-                    primeiro_resultado.click()
-                    break
-                except Exception:
-                    time.sleep(0.5)
 
         time.sleep(1)
 
-        campo_destino = self.wait.until(
-            EC.element_to_be_clickable((By.ID, "com.ubercab:id/edit_text"))
+        destino = self._preencher_campo(
+            destino, "com.ubercab:id/edit_text"
         )
-        campo_destino.click()
-        time.sleep(0.5)
-        campo_destino.clear()
-        campo_destino.send_keys(destino)
-
-        container_resultados = self.wait.until(
-            EC.presence_of_element_located((By.ID, "com.ubercab:id/ub__text_search_v2_results"))
-        )
-
-        for tentativa in range(3):
-            try:
-                primeiro_resultado = container_resultados.find_element(
-                    By.XPATH, ".//android.widget.Button[@content-desc]"
-                )
-                destino = primeiro_resultado.get_attribute("content-desc")
-                primeiro_resultado.click()
-                break
-            except Exception:
-                time.sleep(0.5)
 
         time.sleep(2)
 
@@ -169,7 +129,7 @@ class AutomacaoUber(BaseAutomacao):
 
         return resultados
 
-    def _preencher_campo(self, endereco: str, container_id: str) -> None:
+    def _preencher_campo(self, endereco: str, container_id: str) -> str:
         assert self.driver is not None
         assert self.wait is not None
 
@@ -187,15 +147,19 @@ class AutomacaoUber(BaseAutomacao):
             EC.presence_of_element_located((By.ID, "com.ubercab:id/ub__text_search_v2_results"))
         )
 
+        selecionado = endereco
         for tentativa in range(3):
             try:
                 primeiro_resultado = container_resultados.find_element(
                     By.XPATH, ".//android.widget.Button[@content-desc]"
                 )
+                selecionado = primeiro_resultado.get_attribute("content-desc") or endereco
                 primeiro_resultado.click()
                 break
             except Exception:
                 time.sleep(0.5)
+
+        return selecionado
 
     def voltar_tela_inicial(self) -> None:
         assert self.driver is not None
