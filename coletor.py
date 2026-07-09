@@ -66,10 +66,11 @@ class Coletor:
                 agora = time.strftime('%H:%M:%S')
                 self.status_callback(f"[{agora}] Rodada {rodada}/{self.total_rodadas}...")
 
+                temperatura = None
                 condicao_tempo = ''
                 if clima_servico is not None:
-                    condicao_tempo = clima_servico.consultar(lat, lon, api_key)
-                    self.status_callback(f"Clima: {condicao_tempo}")
+                    temperatura, condicao_tempo = clima_servico.consultar(lat, lon, api_key)
+                    self.status_callback(f"Clima: {temperatura}°C - {condicao_tempo}")
 
                 for app in apps_ativos:
                     automacao = criar_automacao(app, self.config)
@@ -83,7 +84,7 @@ class Coletor:
                         self.config['destino'],
                         origem=self.config.get('origem', ''),
                     )
-                    repositorio.salvar(corridas, rodada, device_model, condicao_tempo)
+                    repositorio.salvar(corridas, rodada, device_model, temperatura, condicao_tempo)
                     automacao.desconectar()
 
                 self.status_callback(f"Rodada {rodada} concluída.")

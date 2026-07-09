@@ -8,6 +8,10 @@ import streamlit as st
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+for mod_name in list(sys.modules):
+    if mod_name.startswith('modelos') or mod_name.startswith('persistencia') or mod_name == 'coletor':
+        del sys.modules[mod_name]
+
 from coletor import Coletor
 from persistencia.repositorio_banco import RepositorioBanco
 
@@ -113,14 +117,15 @@ else:
             linhas.append({
                 "ID": s.id,
                 "Timestamp": s.timestamp,
-                "Device": s.device_model,
-                "App": s.app,
                 "Categoria": c.get("categoria", ""),
                 "Preço": f"R$ {c.get('preco', 0):.2f}".replace(".", ","),
-                "Estimativa": f"{c.get('estimativa_min', 0)} min" if c.get("estimativa_min") else "",
                 "Origem": s.origem,
                 "Destino": s.destino,
-                "Cond. Tempo": s.condicao_tempo,
+                "Estimativa": f"{c.get('estimativa_min', 0)} min" if c.get("estimativa_min") else "",
+                "Temp (°C)": getattr(s, 'temperatura', None),
+                "Cond. Tempo": getattr(s, 'condicao_tempo', ""),
+                "Device": s.device_model,
+                "App": s.app,
             })
 
     df = pd.DataFrame(linhas)
@@ -166,7 +171,8 @@ else:
                 "app": s.app,
                 "origem": s.origem,
                 "destino": s.destino,
-                "condicao_tempo": s.condicao_tempo,
+                "temperatura": getattr(s, 'temperatura', None),
+                "condicao_tempo": getattr(s, 'condicao_tempo', ""),
                 "resultados": itens_filtrados
             })
 

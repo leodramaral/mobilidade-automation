@@ -67,7 +67,7 @@ class AutomacaoUber(BaseAutomacao):
 
         time.sleep(2)
 
-        CATEGORIAS_PERMITIDAS = {"uberx", "comfort", "moto"}
+        CATEGORIAS_PERMITIDAS = {"uberx", "comfort", "moto", "prioridade"}
         resultados = []
 
         page_source = self.driver.page_source

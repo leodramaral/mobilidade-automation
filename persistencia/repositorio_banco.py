@@ -23,6 +23,7 @@ class RepositorioBanco(BaseRepositorio):
                 app TEXT NOT NULL DEFAULT '',
                 origem TEXT NOT NULL DEFAULT '',
                 destino TEXT NOT NULL DEFAULT '',
+                temperatura REAL DEFAULT NULL,
                 condicao_tempo TEXT NOT NULL DEFAULT '',
                 payload_json TEXT NOT NULL
             )
@@ -32,7 +33,7 @@ class RepositorioBanco(BaseRepositorio):
         self.conn.execute("CREATE INDEX IF NOT EXISTS idx_snapshots_app ON snapshots(app)")
         self.conn.commit()
 
-    def salvar(self, corridas: List[Corrida], rodada: int, device_model: str = '', condicao_tempo: str = '') -> None:
+    def salvar(self, corridas: List[Corrida], rodada: int, device_model: str = '', temperatura: Optional[float] = None, condicao_tempo: str = '') -> None:
         if not corridas:
             return
         assert self.conn is not None
@@ -44,9 +45,9 @@ class RepositorioBanco(BaseRepositorio):
         payload = json.dumps([c.para_dict() for c in corridas], ensure_ascii=False)
 
         self.conn.execute(
-            "INSERT INTO snapshots (timestamp, device_model, app, origem, destino, condicao_tempo, payload_json) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?)",
-            (timestamp, device_model, app, origem, destino, condicao_tempo, payload)
+            "INSERT INTO snapshots (timestamp, device_model, app, origem, destino, temperatura, condicao_tempo, payload_json) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            (timestamp, device_model, app, origem, destino, temperatura, condicao_tempo, payload)
         )
         self.conn.commit()
 
@@ -56,7 +57,7 @@ class RepositorioBanco(BaseRepositorio):
     def listar_todos(self) -> List[Snapshot]:
         assert self.conn is not None
         cursor = self.conn.execute(
-            "SELECT id, timestamp, device_model, app, origem, destino, condicao_tempo, payload_json "
+            "SELECT id, timestamp, device_model, app, origem, destino, temperatura, condicao_tempo, payload_json "
             "FROM snapshots ORDER BY timestamp"
         )
         return [
@@ -67,8 +68,9 @@ class RepositorioBanco(BaseRepositorio):
                 app=row[3] or '',
                 origem=row[4] or '',
                 destino=row[5] or '',
-                condicao_tempo=row[6] or '',
-                payload=json.loads(row[7]),
+                temperatura=row[6],
+                condicao_tempo=row[7] or '',
+                payload=json.loads(row[8]),
             )
             for row in cursor.fetchall()
         ]

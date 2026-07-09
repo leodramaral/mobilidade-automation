@@ -26,27 +26,27 @@ class ClimaServico:
         """)
         self.conn.commit()
 
-    def consultar(self, lat: float, lon: float, api_key: str) -> str:
+    def consultar(self, lat: float, lon: float, api_key: str) -> tuple[float, str]:
         chave_cache = f"{lat},{lon}"
         print(f"[Clima] Consultando clima para: lat={lat}, lon={lon}")
         cache = self._buscar_cache(chave_cache)
         if cache is not None:
-            print(f"[Clima] Usando cache: {cache}")
+            print(f"[Clima] Usando cache: {cache[0]}°C - {cache[1]}")
             return cache
 
         print(f"[Clima] Cache expirado ou inexistente, chamando API...")
         resultado = self._buscar_api(lat, lon, api_key)
         if resultado is not None:
             self._salvar_cache(chave_cache, resultado["temperatura"], resultado["condicao"], resultado["condicao_texto"])
-            print(f"[Clima] Sucesso: {resultado['condicao_texto']}")
-            return resultado["condicao_texto"]
+            print(f"[Clima] Sucesso: {resultado['temperatura']}°C - {resultado['condicao']}")
+            return (resultado["temperatura"], resultado["condicao"])
 
         print(f"[Clima] Falha ao consultar clima")
-        return "Erro ao consultar clima"
+        return (0.0, "Erro ao consultar clima")
 
-    def _buscar_cache(self, chave: str) -> Optional[str]:
+    def _buscar_cache(self, chave: str) -> Optional[tuple[float, str]]:
         cursor = self.conn.execute(
-            "SELECT condicao_texto, consultado_em FROM clima_cache "
+            "SELECT temperatura, condicao, consultado_em FROM clima_cache "
             "WHERE cidade = ? ORDER BY consultado_em DESC LIMIT 1",
             (chave,),
         )
@@ -54,10 +54,10 @@ class ClimaServico:
         if row is None:
             return None
 
-        texto, consultado_em_str = row
+        temperatura, condicao, consultado_em_str = row
         consultado_em = datetime.fromisoformat(consultado_em_str)
         if datetime.now() - consultado_em < timedelta(minutes=self.CACHE_MINUTOS):
-            return texto
+            return (temperatura, condicao)
 
         return None
 
