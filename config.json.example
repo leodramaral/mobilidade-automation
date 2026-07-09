@@ -1,6 +1,6 @@
 {
-  "origem": "PAC Alvorada",
-  "destino": "Plaza shopping",
+  "origem": "",
+  "destino": "",
   "limite_consultas": 2,
   "intervalo_segundos": 20,
   "appium": {
@@ -17,5 +17,10 @@
   "persistencia": {
     "tipo": "banco",
     "caminho": "mobilidade.db"
+  },
+  "openweather": {
+    "api_key": "SUA_CHAVE_AQUI",
+    "lat": -23.5505,
+    "lon": -46.6333
   }
 }

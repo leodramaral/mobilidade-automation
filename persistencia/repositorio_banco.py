@@ -32,7 +32,7 @@ class RepositorioBanco(BaseRepositorio):
         self.conn.execute("CREATE INDEX IF NOT EXISTS idx_snapshots_app ON snapshots(app)")
         self.conn.commit()
 
-    def salvar(self, corridas: List[Corrida], rodada: int, device_model: str = '') -> None:
+    def salvar(self, corridas: List[Corrida], rodada: int, device_model: str = '', condicao_tempo: str = '') -> None:
         if not corridas:
             return
         assert self.conn is not None
@@ -46,7 +46,7 @@ class RepositorioBanco(BaseRepositorio):
         self.conn.execute(
             "INSERT INTO snapshots (timestamp, device_model, app, origem, destino, condicao_tempo, payload_json) "
             "VALUES (?, ?, ?, ?, ?, ?, ?)",
-            (timestamp, device_model, app, origem, destino, '', payload)
+            (timestamp, device_model, app, origem, destino, condicao_tempo, payload)
         )
         self.conn.commit()
 

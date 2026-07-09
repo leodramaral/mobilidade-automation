@@ -1,5 +1,8 @@
 .mimocode
 
+# Config com chaves sensíveis
+config.json
+
 # Bancos de dados locais
 *.db
 *.sqlite

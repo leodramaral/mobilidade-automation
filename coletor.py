@@ -4,6 +4,7 @@ from typing import Callable, Optional
 from automacoes.automacao_99 import Automacao99
 from automacoes.automacao_uber import AutomacaoUber
 from persistencia.repositorio_banco import RepositorioBanco
+from servicos.clima import ClimaServico
 
 
 def listar_apps_ativos(config: dict) -> list[str]:
@@ -45,6 +46,15 @@ class Coletor:
         repositorio = criar_repositorio(self.config)
         repositorio.inicializar()
 
+        clima_servico = None
+        config_clima = self.config.get('openweather', {})
+        lat = config_clima.get('lat')
+        lon = config_clima.get('lon')
+        api_key = config_clima.get('api_key', '')
+        if lat is not None and lon is not None and api_key and api_key != 'SUA_CHAVE_AQUI':
+            assert repositorio.conn is not None
+            clima_servico = ClimaServico(repositorio.conn)
+
         device_model = None
 
         try:
@@ -55,6 +65,11 @@ class Coletor:
                 self.rodada_atual = rodada
                 agora = time.strftime('%H:%M:%S')
                 self.status_callback(f"[{agora}] Rodada {rodada}/{self.total_rodadas}...")
+
+                condicao_tempo = ''
+                if clima_servico is not None:
+                    condicao_tempo = clima_servico.consultar(lat, lon, api_key)
+                    self.status_callback(f"Clima: {condicao_tempo}")
 
                 for app in apps_ativos:
                     automacao = criar_automacao(app, self.config)
@@ -68,7 +83,7 @@ class Coletor:
                         self.config['destino'],
                         origem=self.config.get('origem', ''),
                     )
-                    repositorio.salvar(corridas, rodada, device_model)
+                    repositorio.salvar(corridas, rodada, device_model, condicao_tempo)
                     automacao.desconectar()
 
                 self.status_callback(f"Rodada {rodada} concluída.")

@@ -66,6 +66,7 @@ with st.sidebar:
                 "intervalo_segundos": int(intervalo_segundos),
                 "appium": config["appium"],
                 "persistencia": config["persistencia"],
+                "openweather": config.get("openweather", {}),
             }
             coletor = Coletor(config_coleta, status_callback=print)
             thread = threading.Thread(target=coletor.executar, daemon=True)
