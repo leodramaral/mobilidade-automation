@@ -17,12 +17,9 @@ class Corrida:
 
     def para_dict(self) -> dict:
         return {
-            "app": self.app,
             "categoria": self.categoria,
             "preco": self.preco,
             "estimativa_min": self.estimativa,
-            "origem": self.origem,
-            "destino": self.destino,
             "preco_label": self.preco_label,
             "estimativa_label": self.estimativa_label,
         }
@@ -33,4 +30,8 @@ class Snapshot:
     id: int
     timestamp: datetime
     device_model: str
+    app: str
+    origem: str
+    destino: str
+    condicao_tempo: str
     payload: List[dict]

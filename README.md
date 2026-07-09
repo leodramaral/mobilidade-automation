@@ -146,7 +146,11 @@ Os dados sao salvos em `mobilidade.db` (SQLite) na pasta atual do executavel. Es
 | id | INTEGER | Chave primaria auto-incremental |
 | timestamp | TEXT | Momento da coleta (ISO 8601) |
 | device_model | TEXT | Modelo do dispositivo Android |
-| payload_json | TEXT | JSON com os dados das corridas coletadas |
+| app | TEXT | Aplicativo de coleta (ex: "99", "uber") |
+| origem | TEXT | Endereco de origem da coleta |
+| destino | TEXT | Endereco de destino da coleta |
+| condicao_tempo | TEXT | Condicao do tempo no momento da coleta (reservado para uso futuro) |
+| payload_json | TEXT | JSON array com os dados das corridas (categoria, preco, estimativa) |
 
 ## Solucao de problemas
 

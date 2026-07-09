@@ -1,4 +1,5 @@
 import os
+import subprocess
 import sys
 import webbrowser
 import threading
@@ -10,9 +11,42 @@ def get_base_path():
     return os.path.dirname(os.path.abspath(__file__))
 
 
+def _matar_porta(porta):
+    meu_pid = os.getpid()
+    try:
+        if sys.platform == 'win32':
+            resultado = subprocess.run(
+                ['netstat', '-ano'], capture_output=True, text=True,
+                creationflags=subprocess.CREATE_NO_WINDOW,
+            )
+            for linha in resultado.stdout.splitlines():
+                if f':{porta}' in linha and 'LISTENING' in linha:
+                    pid = int(linha.strip().split()[-1])
+                    if pid != meu_pid:
+                        subprocess.run(
+                            ['taskkill', '/F', '/PID', str(pid)],
+                            capture_output=True,
+                            creationflags=subprocess.CREATE_NO_WINDOW,
+                        )
+        else:
+            resultado = subprocess.run(
+                ['lsof', '-ti', f':{porta}'], capture_output=True, text=True,
+            )
+            for pid_str in resultado.stdout.splitlines():
+                try:
+                    pid = int(pid_str.strip())
+                    if pid != meu_pid:
+                        os.kill(pid, 9)
+                except (ValueError, ProcessLookupError, PermissionError):
+                    pass
+    except Exception:
+        pass
+
+
 def main():
     base = get_base_path()
     cwd = os.getcwd()
+    _matar_porta(8501)
 
     if getattr(sys, 'frozen', False):
         import shutil
@@ -34,7 +68,6 @@ def main():
         threading.Timer(2.0, lambda: webbrowser.open('http://localhost:8501')).start()
         streamlit_main()
     else:
-        import subprocess
         app_path = os.path.join(os.path.dirname(__file__), 'ui', 'app.py')
         subprocess.run([
             sys.executable, '-m', 'streamlit', 'run', app_path,

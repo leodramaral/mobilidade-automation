@@ -1,6 +1,6 @@
 {
-  "origem": "Condominio Parque Ville Municipal",
-  "destino": "Edifício The Office Avenida Mario Ypiranga, 315",
+  "origem": "PAC Alvorada",
+  "destino": "Plaza shopping",
   "limite_consultas": 2,
   "intervalo_segundos": 20,
   "appium": {
@@ -10,7 +10,7 @@
       "app_package": "com.taxis99"
     },
     "uber": {
-      "active": false,
+      "active": true,
       "app_package": "com.ubercab"
     }
   },

@@ -113,12 +113,13 @@ else:
                 "ID": s.id,
                 "Timestamp": s.timestamp,
                 "Device": s.device_model,
-                "App": c.get("app", ""),
+                "App": s.app,
                 "Categoria": c.get("categoria", ""),
                 "Preço": c.get("preco_label", ""),
                 "Estimativa": c.get("estimativa_label", ""),
-                "Origem": c.get("origem", ""),
-                "Destino": c.get("destino", ""),
+                "Origem": s.origem,
+                "Destino": s.destino,
+                "Cond. Tempo": s.condicao_tempo,
             })
 
     df = pd.DataFrame(linhas)
@@ -153,7 +154,7 @@ else:
     for s in snapshots:
         itens_filtrados = []
         for c in s.payload:
-            app_ok = not filtro_app or c.get("app", "") in filtro_app
+            app_ok = not filtro_app or s.app in filtro_app
             cat_ok = not filtro_categoria or c.get("categoria", "") in filtro_categoria
             if app_ok and cat_ok:
                 itens_filtrados.append(c)
@@ -161,6 +162,10 @@ else:
             dados_filtrados.append({
                 "id": s.id,
                 "timestamp": s.timestamp.isoformat(),
+                "app": s.app,
+                "origem": s.origem,
+                "destino": s.destino,
+                "condicao_tempo": s.condicao_tempo,
                 "resultados": itens_filtrados
             })
 

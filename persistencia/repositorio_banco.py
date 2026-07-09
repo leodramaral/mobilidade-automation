@@ -20,11 +20,16 @@ class RepositorioBanco(BaseRepositorio):
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 timestamp TEXT NOT NULL,
                 device_model TEXT,
+                app TEXT NOT NULL DEFAULT '',
+                origem TEXT NOT NULL DEFAULT '',
+                destino TEXT NOT NULL DEFAULT '',
+                condicao_tempo TEXT NOT NULL DEFAULT '',
                 payload_json TEXT NOT NULL
             )
         """)
         self.conn.execute("CREATE INDEX IF NOT EXISTS idx_snapshots_timestamp ON snapshots(timestamp)")
         self.conn.execute("CREATE INDEX IF NOT EXISTS idx_snapshots_device ON snapshots(device_model)")
+        self.conn.execute("CREATE INDEX IF NOT EXISTS idx_snapshots_app ON snapshots(app)")
         self.conn.commit()
 
     def salvar(self, corridas: List[Corrida], rodada: int, device_model: str = '') -> None:
@@ -33,11 +38,15 @@ class RepositorioBanco(BaseRepositorio):
         assert self.conn is not None
 
         timestamp = corridas[0].timestamp.isoformat()
+        app = corridas[0].app
+        origem = corridas[0].origem
+        destino = corridas[0].destino
         payload = json.dumps([c.para_dict() for c in corridas], ensure_ascii=False)
 
         self.conn.execute(
-            "INSERT INTO snapshots (timestamp, device_model, payload_json) VALUES (?, ?, ?)",
-            (timestamp, device_model, payload)
+            "INSERT INTO snapshots (timestamp, device_model, app, origem, destino, condicao_tempo, payload_json) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?)",
+            (timestamp, device_model, app, origem, destino, '', payload)
         )
         self.conn.commit()
 
@@ -47,7 +56,7 @@ class RepositorioBanco(BaseRepositorio):
     def listar_todos(self) -> List[Snapshot]:
         assert self.conn is not None
         cursor = self.conn.execute(
-            "SELECT id, timestamp, device_model, payload_json "
+            "SELECT id, timestamp, device_model, app, origem, destino, condicao_tempo, payload_json "
             "FROM snapshots ORDER BY timestamp"
         )
         return [
@@ -55,7 +64,11 @@ class RepositorioBanco(BaseRepositorio):
                 id=row[0],
                 timestamp=datetime.fromisoformat(row[1]),
                 device_model=row[2] or '',
-                payload=json.loads(row[3]),
+                app=row[3] or '',
+                origem=row[4] or '',
+                destino=row[5] or '',
+                condicao_tempo=row[6] or '',
+                payload=json.loads(row[7]),
             )
             for row in cursor.fetchall()
         ]
