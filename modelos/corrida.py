@@ -12,16 +12,12 @@ class Corrida:
     origem: str
     destino: str
     timestamp: datetime
-    preco_label: str = ""
-    estimativa_label: str = ""
 
     def para_dict(self) -> dict:
         return {
             "categoria": self.categoria,
             "preco": self.preco,
             "estimativa_min": self.estimativa,
-            "preco_label": self.preco_label,
-            "estimativa_label": self.estimativa_label,
         }
 
 

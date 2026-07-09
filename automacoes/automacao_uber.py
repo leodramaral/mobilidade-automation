@@ -163,8 +163,6 @@ class AutomacaoUber(BaseAutomacao):
                     origem=origem,
                     destino=destino,
                     timestamp=datetime.now(),
-                    preco_label=f"R$ {preco_str}",
-                    estimativa_label=f"{estimativa_min} min",
                 ))
             except Exception:
                 continue

@@ -153,7 +153,7 @@ class Automacao99(BaseAutomacao):
             try:
                 categoria = None
                 preco = None
-                estimativa_label = None
+                estimativa_text = None
 
                 for child in container.iter():
                     rid = child.get('resource-id', '')
@@ -162,14 +162,14 @@ class Automacao99(BaseAutomacao):
                     elif rid == 'com.taxis99:id/new_estimate_price_text_tv':
                         preco = child.get('text', '')
                     elif rid == 'com.taxis99:id/mix_eta_tv':
-                        estimativa_label = child.get('text', '')
+                        estimativa_text = child.get('text', '')
 
                 if not categoria or categoria.lower() not in CATEGORIAS_PERMITIDAS:
                     continue
                 if not preco:
                     continue
 
-                match = re.search(r'(\d+)\s*min', estimativa_label or '')
+                match = re.search(r'(\d+)\s*min', estimativa_text or '')
                 estimativa_min = int(match.group(1)) if match else 0
 
                 resultados.append(Corrida(
@@ -180,8 +180,6 @@ class Automacao99(BaseAutomacao):
                     origem=origem,
                     destino=destino,
                     timestamp=datetime.now(),
-                    preco_label=preco,
-                    estimativa_label=estimativa_label or "",
                 ))
             except Exception:
                 continue
