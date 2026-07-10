@@ -84,6 +84,12 @@ class Coletor:
                         self.config['destino'],
                         origem=self.config.get('origem', ''),
                     )
+
+                    capturar_metricas = self.config['appium'][app].get('capturar_metricas', False)
+                    if capturar_metricas:
+                        self.status_callback(f"Capturando métricas detalhadas do {app.upper()}...")
+                        corridas = automacao.coletar_metricas(corridas)
+
                     repositorio.salvar(corridas, rodada, device_model, temperatura, condicao_tempo)
                     automacao.desconectar()
 

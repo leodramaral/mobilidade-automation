@@ -76,7 +76,7 @@ class AutomacaoUber(BaseAutomacao):
         except Exception:
             pass
 
-        CATEGORIAS_PERMITIDAS = {"uberx", "comfort"}
+        CATEGORIAS_PERMITIDAS = {"uberx", "moto", "comfort", "prioridade"}
         categorias_para_extrair = {}
         resultados = []
 
@@ -151,6 +151,30 @@ class AutomacaoUber(BaseAutomacao):
                 if len(categorias_para_extrair) >= len(CATEGORIAS_PERMITIDAS):
                     break
 
+        return resultados
+
+    def coletar_metricas(self, corridas: List[Corrida]) -> List[Corrida]:
+        assert self.driver is not None
+        assert self.wait is not None
+
+        page_source = self.driver.page_source
+        root = ET.fromstring(page_source)
+
+        categorias_para_extrair = {}
+        for elem in root.iter():
+            content_desc = elem.get('content-desc', '')
+            if 'Preço:' not in content_desc:
+                continue
+            partes = content_desc.split("!")
+            for i, parte in enumerate(partes):
+                parte_lower = parte.lower().strip()
+                if parte_lower in {"uberx", "comfort"}:
+                    categorias_para_extrair[parte_lower] = content_desc
+                    break
+                if "selecionado" in parte_lower and i + 1 < len(partes):
+                    categorias_para_extrair[partes[i + 1].strip().lower()] = content_desc
+                    break
+
         categorias_processadas = set()
 
         for nome_categoria in list(categorias_para_extrair.keys()):
@@ -215,7 +239,7 @@ class AutomacaoUber(BaseAutomacao):
 
                 campos = self._extrair_detalhamento_preco()
                 if campos:
-                    for corrida in resultados:
+                    for corrida in corridas:
                         if (
                             corrida.categoria.lower() == nome_categoria.lower()
                             and corrida.app == "uber"
@@ -278,7 +302,7 @@ class AutomacaoUber(BaseAutomacao):
                     pass
                 continue
 
-        return resultados
+        return corridas
 
     def _preencher_campo(self, endereco: str, container_id: str) -> str:
         assert self.driver is not None

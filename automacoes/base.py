@@ -12,6 +12,9 @@ class BaseAutomacao(ABC):
     def coletar_precos(self, destino: str, origem: str = "") -> List[Corrida]: ...
 
     @abstractmethod
+    def coletar_metricas(self, corridas: List[Corrida]) -> List[Corrida]: ...
+
+    @abstractmethod
     def voltar_tela_inicial(self) -> None: ...
 
     @abstractmethod

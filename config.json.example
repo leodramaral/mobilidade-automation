@@ -7,11 +7,13 @@
     "server": "http://127.0.0.1:4723",
     "99": {
       "active": true,
-      "app_package": "com.taxis99"
+      "app_package": "com.taxis99",
+      "capturar_metricas": false
     },
     "uber": {
       "active": true,
-      "app_package": "com.ubercab"
+      "app_package": "com.ubercab",
+      "capturar_metricas": true
     }
   },
   "persistencia": {

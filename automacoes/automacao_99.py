@@ -186,6 +186,9 @@ class Automacao99(BaseAutomacao):
 
         return resultados
 
+    def coletar_metricas(self, corridas: List[Corrida]) -> List[Corrida]:
+        return corridas
+
     def _fechar_dialog_amigo(self) -> None:
         assert self.driver is not None
         try:
