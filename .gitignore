@@ -3,6 +3,9 @@
 # Config com chaves sensíveis
 config.json
 
+# Agendamentos com dados pessoais
+agendamentos.json
+
 # Bancos de dados locais
 *.db
 *.sqlite
