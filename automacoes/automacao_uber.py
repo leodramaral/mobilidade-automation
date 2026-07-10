@@ -67,64 +67,215 @@ class AutomacaoUber(BaseAutomacao):
 
         time.sleep(2)
 
-        CATEGORIAS_PERMITIDAS = {"uberx", "comfort", "moto", "prioridade"}
+        try:
+            self.wait.until(
+                EC.presence_of_element_located(
+                    (By.XPATH, "//*[contains(@content-desc,'Preço:')]")
+                )
+            )
+        except Exception:
+            pass
+
+        CATEGORIAS_PERMITIDAS = {"uberx", "comfort"}
+        categorias_para_extrair = {}
         resultados = []
 
-        page_source = self.driver.page_source
-        root = ET.fromstring(page_source)
+        def _parse_opcoes(categorias_para_extrair, resultados):
+            page_source = self.driver.page_source
+            root = ET.fromstring(page_source)
 
-        for elem in root.iter():
-            content_desc = elem.get('content-desc', '')
-            if 'Preço:' not in content_desc:
+            for elem in root.iter():
+                content_desc = elem.get('content-desc', '')
+                if 'Preço:' not in content_desc:
+                    continue
+
+                try:
+                    partes = content_desc.split("!")
+
+                    categoria = None
+                    for i, parte in enumerate(partes):
+                        parte_lower = parte.lower().strip()
+                        if parte_lower in CATEGORIAS_PERMITIDAS:
+                            categoria = parte.strip()
+                            break
+                        if "selecionado" in parte_lower:
+                            if i + 1 < len(partes):
+                                categoria = partes[i + 1].strip()
+                                break
+
+                    if not categoria or categoria.lower() not in CATEGORIAS_PERMITIDAS:
+                        continue
+
+                    if categoria.lower() in categorias_para_extrair:
+                        continue
+
+                    preco_str = ""
+                    for parte in partes:
+                        if "Desconto de" in parte:
+                            preco_str = parte.replace("Desconto de", "").replace("R$", "").strip()
+                            break
+                        elif "Preço:" in parte:
+                            preco_str = parte.replace("Preço:", "").replace("R$", "").strip()
+
+                    if not preco_str:
+                        continue
+
+                    preco = float(preco_str.replace(".", "").replace(",", "."))
+
+                    estimativa_min = 0
+                    for parte in partes:
+                        match = re.search(r'está a (\d+) minuto', parte)
+                        if match:
+                            estimativa_min = int(match.group(1))
+                            break
+
+                    resultados.append(Corrida(
+                        app="uber",
+                        categoria=categoria,
+                        preco=preco,
+                        estimativa=estimativa_min,
+                        origem=origem,
+                        destino=destino,
+                        timestamp=datetime.now(),
+                    ))
+                    categorias_para_extrair[categoria.lower()] = content_desc
+                except Exception:
+                    continue
+
+        _parse_opcoes(categorias_para_extrair, resultados)
+
+        if len(categorias_para_extrair) < len(CATEGORIAS_PERMITIDAS):
+            for _scroll in range(3):
+                self._scroll_lista_opcoes()
+                _parse_opcoes(categorias_para_extrair, resultados)
+                if len(categorias_para_extrair) >= len(CATEGORIAS_PERMITIDAS):
+                    break
+
+        categorias_processadas = set()
+
+        for nome_categoria in list(categorias_para_extrair.keys()):
+            if nome_categoria in categorias_processadas:
                 continue
 
             try:
-                partes = content_desc.split("!")
+                ja_selecionado = categorias_para_extrair[nome_categoria].lower().startswith("selecionado")
 
-                categoria = None
-                for i, parte in enumerate(partes):
-                    parte_lower = parte.lower().strip()
-                    if parte_lower in CATEGORIAS_PERMITIDAS:
-                        categoria = parte.strip()
-                        break
-                    if "selecionado" in parte_lower:
-                        if i + 1 < len(partes):
-                            categoria = partes[i + 1].strip()
+                if not ja_selecionado:
+                    todos_elementos = self.driver.find_elements(
+                        By.XPATH,
+                        "//*[@clickable='true' and .//*[contains(@content-desc,'Preço:')]]"
+                    )
+                    for el in todos_elementos:
+                        try:
+                            child = el.find_element(By.XPATH, ".//*[contains(@content-desc,'Preço:')]")
+                            desc = child.get_attribute("content-desc").lower()
+                            if f"!{nome_categoria}!" in desc or desc.startswith(nome_categoria):
+                                el.click()
+                                time.sleep(2)
+                                break
+                        except Exception:
+                            continue
+
+                todos_elementos = self.driver.find_elements(
+                    By.XPATH,
+                    "//*[@clickable='true' and .//*[contains(@content-desc,'Preço:')]]"
+                )
+                for el in todos_elementos:
+                    try:
+                        child = el.find_element(By.XPATH, ".//*[contains(@content-desc,'Preço:')]")
+                        desc = child.get_attribute("content-desc").lower()
+                        if f"!{nome_categoria}!" in desc or desc.startswith(nome_categoria):
+                            el.click()
+                            time.sleep(3)
+                            break
+                    except Exception:
+                        continue
+
+                try:
+                    card_view = self.driver.find_element(
+                        By.XPATH,
+                        "//com.uber.rib.core.compose.root.UberComposeView"
+                        "//*[contains(@content-desc,'Preço:') "
+                        "and contains(@content-desc,'capacidade estimada')]"
+                    )
+                    try:
+                        clickable = card_view.find_element(
+                            By.XPATH, ".//*[@clickable='true']"
+                        )
+                        clickable.click()
+                        time.sleep(3)
+                    except Exception:
+                        try:
+                            card_view.click()
+                            time.sleep(3)
+                        except Exception:
+                            pass
+                except Exception:
+                    pass
+
+                campos = self._extrair_detalhamento_preco()
+                if campos:
+                    for corrida in resultados:
+                        if (
+                            corrida.categoria.lower() == nome_categoria.lower()
+                            and corrida.app == "uber"
+                        ):
+                            corrida.preco_base = campos.get("preco_base")
+                            corrida.preco_minimo = campos.get("preco_minimo")
+                            corrida.adicional_por_minuto = campos.get(
+                                "adicional_por_minuto"
+                            )
+                            corrida.adicional_por_km = campos.get(
+                                "adicional_por_km"
+                            )
+                            corrida.custo_fixo = campos.get("custo_fixo")
+                            corrida.adicional_espera = campos.get(
+                                "adicional_espera"
+                            )
                             break
 
-                if not categoria or categoria.lower() not in CATEGORIAS_PERMITIDAS:
-                    continue
+                try:
+                    voltar = self.driver.find_element(
+                        By.XPATH, "//*[@content-desc='Voltar']"
+                    )
+                    voltar.click()
+                    time.sleep(1)
+                except Exception:
+                    pass
 
-                preco_str = ""
-                for parte in partes:
-                    if "Desconto de" in parte:
-                        preco_str = parte.replace("Desconto de", "").replace("R$", "").strip()
+                self.driver.back()
+                time.sleep(2)
+
+                self._scroll_lista_opcoes()
+
+                try:
+                    self.wait.until(
+                        EC.presence_of_element_located(
+                            (By.XPATH,
+                             "//*[@clickable='true' and .//*[contains(@content-desc,'Preço:')]]")
+                        )
+                    )
+                except Exception:
+                    self.driver.activate_app(self.app_package)
+                    time.sleep(3)
+                    try:
+                        self.wait.until(
+                            EC.presence_of_element_located(
+                                (By.XPATH,
+                                 "//*[@clickable='true' and .//*[contains(@content-desc,'Preço:')]]")
+                            )
+                        )
+                    except Exception:
                         break
-                    elif "Preço:" in parte:
-                        preco_str = parte.replace("Preço:", "").replace("R$", "").strip()
 
-                if not preco_str:
-                    continue
-
-                preco = float(preco_str.replace(".", "").replace(",", "."))
-
-                estimativa_min = 0
-                for parte in partes:
-                    match = re.search(r'está a (\d+) minuto', parte)
-                    if match:
-                        estimativa_min = int(match.group(1))
-                        break
-
-                resultados.append(Corrida(
-                    app="uber",
-                    categoria=categoria,
-                    preco=preco,
-                    estimativa=estimativa_min,
-                    origem=origem,
-                    destino=destino,
-                    timestamp=datetime.now(),
-                ))
-            except Exception:
+                categorias_processadas.add(nome_categoria)
+            except Exception as e:
+                print(f"Erro ao capturar {nome_categoria}: {e}")
+                try:
+                    self.driver.back()
+                    time.sleep(1)
+                except Exception:
+                    pass
                 continue
 
         return resultados
@@ -160,6 +311,79 @@ class AutomacaoUber(BaseAutomacao):
                 time.sleep(0.5)
 
         return selecionado
+
+    def _scroll_lista_opcoes(self) -> None:
+        assert self.driver is not None
+
+        self.driver.swipe(360, 900, 360, 400, 800)
+
+    def _extrair_detalhamento_preco(self) -> dict:
+        assert self.driver is not None
+
+        campos = {}
+
+        try:
+            grupos = self.driver.find_elements(
+                By.XPATH,
+                "//*[@resource-id='com.ubercab:id/line_items_container']"
+                "/android.view.ViewGroup",
+            )
+            for grupo in grupos:
+                try:
+                    title_elem = grupo.find_element(
+                        By.XPATH,
+                        ".//*[@resource-id='com.ubercab:id/title_text']",
+                    )
+                    value_elem = grupo.find_element(
+                        By.XPATH,
+                        ".//*[@resource-id='com.ubercab:id/primary_end_text']",
+                    )
+                    title = title_elem.text.strip()
+                    value_text = (
+                        value_elem.text.strip()
+                        .replace("R$", "")
+                        .replace(".", "")
+                        .replace(",", ".")
+                        .strip()
+                    )
+                    valor = float(value_text)
+
+                    title_lower = title.lower()
+                    if "preço base" in title_lower or "preco base" in title_lower:
+                        campos["preco_base"] = valor
+                    elif (
+                        "preço mínimo" in title_lower
+                        or "preco minimo" in title_lower
+                    ):
+                        campos["preco_minimo"] = valor
+                    elif "por minuto" in title_lower:
+                        campos["adicional_por_minuto"] = valor
+                    elif (
+                        "por quilômetro" in title_lower
+                        or "por quilometro" in title_lower
+                    ):
+                        campos["adicional_por_km"] = valor
+                    elif "custo fixo" in title_lower:
+                        campos["custo_fixo"] = valor
+                except Exception:
+                    continue
+        except Exception:
+            pass
+
+        try:
+            espera_elem = self.driver.find_element(
+                By.XPATH,
+                "//*[@resource-id='com.ubercab:id/optional_details']"
+                "//*[@resource-id='com.ubercab:id/subtitle_text']",
+            )
+            match = re.search(r'até\s*R\$\s*([0-9.,]+)', espera_elem.text)
+            if match:
+                valor_str = match.group(1).replace(".", "").replace(",", ".")
+                campos["adicional_espera"] = float(valor_str)
+        except Exception:
+            pass
+
+        return campos
 
     def voltar_tela_inicial(self) -> None:
         assert self.driver is not None
