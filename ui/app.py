@@ -1,6 +1,5 @@
 import json
 import sys
-import threading
 from pathlib import Path
 
 import pandas as pd
@@ -9,10 +8,9 @@ import streamlit as st
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 for mod_name in list(sys.modules):
-    if mod_name.startswith('modelos') or mod_name.startswith('persistencia') or mod_name == 'coletor':
+    if mod_name.startswith('modelos') or mod_name.startswith('persistencia'):
         del sys.modules[mod_name]
 
-from coletor import Coletor
 from persistencia.repositorio_banco import RepositorioBanco
 
 st.set_page_config(page_title="Mobilidade", layout="wide")
@@ -34,75 +32,6 @@ def carregar_dados(caminho_db):
 
 config = carregar_config()
 
-with st.sidebar:
-    st.header("Configuração da Coleta")
-
-    coletando = st.session_state.get("coletando", False)
-
-    destino = st.text_input("Destino", value=config.get("destino", ""), disabled=coletando)
-    origem = st.text_input(
-        "Origem",
-        value=config.get("origem", ""),
-        placeholder="Deixe vazio para usar a atual",
-        disabled=coletando,
-    )
-    limite_consultas = st.number_input(
-        "Limite de consultas",
-        min_value=1,
-        value=config.get("limite_consultas", 2),
-        disabled=coletando,
-    )
-    intervalo_segundos = st.number_input(
-        "Intervalo (segundos)",
-        min_value=5,
-        value=config.get("intervalo_segundos", 20),
-        disabled=coletando,
-    )
-
-    st.divider()
-
-    if not coletando:
-        if st.button("Iniciar Coleta", use_container_width=True):
-            config_coleta = {
-                "origem": origem,
-                "destino": destino,
-                "limite_consultas": int(limite_consultas),
-                "intervalo_segundos": int(intervalo_segundos),
-                "appium": config["appium"],
-                "persistencia": config["persistencia"],
-                "openweather": config.get("openweather", {}),
-            }
-            coletor = Coletor(config_coleta, status_callback=print)
-            thread = threading.Thread(target=coletor.executar, daemon=True)
-            thread.start()
-            st.session_state["coletor"] = coletor
-            st.session_state["coletando"] = True
-            st.session_state["thread_coleta"] = thread
-            st.rerun()
-    else:
-        if st.button("Parar Coleta", use_container_width=True, type="primary"):
-            st.session_state["coletor"].parar()
-            st.session_state["coletando"] = False
-            st.rerun()
-
-    st.divider()
-
-    if coletando:
-        st.success("Coletando...")
-    else:
-        st.info("Parado")
-
-if st.session_state.get("coletando", False):
-    thread = st.session_state.get("thread_coleta")
-    if thread and not thread.is_alive():
-        st.session_state["coletando"] = False
-        st.rerun()
-    else:
-        st.iframe(
-            "<script>setTimeout(function(){window.parent.location.reload()}, 10000)</script>",
-            height=1,
-        )
-
 caminho_db = config["persistencia"]["caminho"]
 snapshots = carregar_dados(caminho_db)
 
@@ -114,14 +43,20 @@ else:
     linhas = []
     for s in snapshots:
         for c in s.payload:
+            m = c.get("metricas") or {}
             linhas.append({
                 "ID": s.id,
                 "Timestamp": s.timestamp,
                 "Categoria": c.get("categoria", ""),
                 "Preço": f"R$ {c.get('preco', 0):.2f}".replace(".", ","),
+                "Estimativa": f"{c.get('estimativa_min', 0)} min" if c.get("estimativa_min") else "",
                 "Origem": s.origem,
                 "Destino": s.destino,
-                "Estimativa": f"{c.get('estimativa_min', 0)} min" if c.get("estimativa_min") else "",
+                "Pr. Base": f"R$ {m['preco_base']:.2f}".replace(".", ",") if m.get("preco_base") is not None else "",
+                "Pr. Mínimo": f"R$ {m['preco_minimo']:.2f}".replace(".", ",") if m.get("preco_minimo") is not None else "",
+                "R$/min": f"R$ {m['adicional_por_minuto']:.2f}".replace(".", ",") if m.get("adicional_por_minuto") is not None else "",
+                "R$/km": f"R$ {m['adicional_por_km']:.2f}".replace(".", ",") if m.get("adicional_por_km") is not None else "",
+                "Custo Fixo": f"R$ {m['custo_fixo']:.2f}".replace(".", ",") if m.get("custo_fixo") is not None else "",
                 "Temp (°C)": getattr(s, 'temperatura', None),
                 "Cond. Tempo": getattr(s, 'condicao_tempo', ""),
                 "Device": s.device_model,

@@ -12,7 +12,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 from automacoes.base import BaseAutomacao
-from modelos.corrida import Corrida
+from modelos.corrida import Corrida, MetricasCorrida
 
 
 class AutomacaoUber(BaseAutomacao):
@@ -277,17 +277,12 @@ class AutomacaoUber(BaseAutomacao):
                             corrida.categoria.lower() == nome_categoria.lower()
                             and corrida.app == "uber"
                         ):
-                            corrida.preco_base = campos.get("preco_base")
-                            corrida.preco_minimo = campos.get("preco_minimo")
-                            corrida.adicional_por_minuto = campos.get(
-                                "adicional_por_minuto"
-                            )
-                            corrida.adicional_por_km = campos.get(
-                                "adicional_por_km"
-                            )
-                            corrida.custo_fixo = campos.get("custo_fixo")
-                            corrida.adicional_espera = campos.get(
-                                "adicional_espera"
+                            corrida.metricas = MetricasCorrida(
+                                preco_base=campos.get("preco_base"),
+                                preco_minimo=campos.get("preco_minimo"),
+                                adicional_por_minuto=campos.get("adicional_por_minuto"),
+                                adicional_por_km=campos.get("adicional_por_km"),
+                                custo_fixo=campos.get("custo_fixo"),
                             )
                             break
 
@@ -423,19 +418,6 @@ class AutomacaoUber(BaseAutomacao):
                         campos["custo_fixo"] = valor
                 except Exception:
                     continue
-        except Exception:
-            pass
-
-        try:
-            espera_elem = self.driver.find_element(
-                By.XPATH,
-                "//*[@resource-id='com.ubercab:id/optional_details']"
-                "//*[@resource-id='com.ubercab:id/subtitle_text']",
-            )
-            match = re.search(r'até\s*R\$\s*([0-9.,]+)', espera_elem.text)
-            if match:
-                valor_str = match.group(1).replace(".", "").replace(",", ".")
-                campos["adicional_espera"] = float(valor_str)
         except Exception:
             pass
 

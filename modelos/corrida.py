@@ -4,6 +4,15 @@ from typing import List, Optional
 
 
 @dataclass
+class MetricasCorrida:
+    preco_base: Optional[float] = None
+    preco_minimo: Optional[float] = None
+    adicional_por_minuto: Optional[float] = None
+    adicional_por_km: Optional[float] = None
+    custo_fixo: Optional[float] = None
+
+
+@dataclass
 class Corrida:
     app: str
     categoria: str
@@ -12,12 +21,7 @@ class Corrida:
     origem: str
     destino: str
     timestamp: datetime
-    preco_base: Optional[float] = None
-    preco_minimo: Optional[float] = None
-    adicional_por_minuto: Optional[float] = None
-    adicional_por_km: Optional[float] = None
-    custo_fixo: Optional[float] = None
-    adicional_espera: Optional[float] = None
+    metricas: Optional[MetricasCorrida] = None
 
     def para_dict(self) -> dict:
         d = {
@@ -25,18 +29,14 @@ class Corrida:
             "preco": self.preco,
             "estimativa_min": self.estimativa,
         }
-        if self.preco_base is not None:
-            d["preco_base"] = self.preco_base
-        if self.preco_minimo is not None:
-            d["preco_minimo"] = self.preco_minimo
-        if self.adicional_por_minuto is not None:
-            d["adicional_por_minuto"] = self.adicional_por_minuto
-        if self.adicional_por_km is not None:
-            d["adicional_por_km"] = self.adicional_por_km
-        if self.custo_fixo is not None:
-            d["custo_fixo"] = self.custo_fixo
-        if self.adicional_espera is not None:
-            d["adicional_espera"] = self.adicional_espera
+        if self.metricas:
+            d["metricas"] = {
+                "preco_base": self.metricas.preco_base,
+                "preco_minimo": self.metricas.preco_minimo,
+                "adicional_por_minuto": self.metricas.adicional_por_minuto,
+                "adicional_por_km": self.metricas.adicional_por_km,
+                "custo_fixo": self.metricas.custo_fixo,
+            }
         return d
 
 
