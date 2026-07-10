@@ -16,6 +16,8 @@ from modelos.corrida import Corrida
 
 
 class AutomacaoUber(BaseAutomacao):
+    CATEGORIAS_PERMITIDAS = {"uberx", "moto", "comfort", "prioridade"}
+
     def __init__(self, config_appium: dict[str, str]):
         self.server = config_appium['server']
         self.app_package = config_appium['app_package']
@@ -76,7 +78,6 @@ class AutomacaoUber(BaseAutomacao):
         except Exception:
             pass
 
-        CATEGORIAS_PERMITIDAS = {"uberx", "moto", "comfort", "prioridade"}
         categorias_para_extrair = {}
         resultados = []
 
@@ -95,7 +96,7 @@ class AutomacaoUber(BaseAutomacao):
                     categoria = None
                     for i, parte in enumerate(partes):
                         parte_lower = parte.lower().strip()
-                        if parte_lower in CATEGORIAS_PERMITIDAS:
+                        if parte_lower in self.CATEGORIAS_PERMITIDAS:
                             categoria = parte.strip()
                             break
                         if "selecionado" in parte_lower:
@@ -103,7 +104,7 @@ class AutomacaoUber(BaseAutomacao):
                                 categoria = partes[i + 1].strip()
                                 break
 
-                    if not categoria or categoria.lower() not in CATEGORIAS_PERMITIDAS:
+                    if not categoria or categoria.lower() not in self.CATEGORIAS_PERMITIDAS:
                         continue
 
                     if categoria.lower() in categorias_para_extrair:
@@ -144,11 +145,11 @@ class AutomacaoUber(BaseAutomacao):
 
         _parse_opcoes(categorias_para_extrair, resultados)
 
-        if len(categorias_para_extrair) < len(CATEGORIAS_PERMITIDAS):
+        if len(categorias_para_extrair) < len(self.CATEGORIAS_PERMITIDAS):
             for _scroll in range(3):
                 self._scroll_lista_opcoes()
                 _parse_opcoes(categorias_para_extrair, resultados)
-                if len(categorias_para_extrair) >= len(CATEGORIAS_PERMITIDAS):
+                if len(categorias_para_extrair) >= len(self.CATEGORIAS_PERMITIDAS):
                     break
 
         return resultados
@@ -168,7 +169,7 @@ class AutomacaoUber(BaseAutomacao):
             partes = content_desc.split("!")
             for i, parte in enumerate(partes):
                 parte_lower = parte.lower().strip()
-                if parte_lower in {"uberx", "comfort"}:
+                if parte_lower in self.CATEGORIAS_PERMITIDAS:
                     categorias_para_extrair[parte_lower] = content_desc
                     break
                 if "selecionado" in parte_lower and i + 1 < len(partes):
@@ -195,7 +196,15 @@ class AutomacaoUber(BaseAutomacao):
                             desc = child.get_attribute("content-desc").lower()
                             if f"!{nome_categoria}!" in desc or desc.startswith(nome_categoria):
                                 el.click()
-                                time.sleep(2)
+                                try:
+                                    self.wait.until(
+                                        EC.presence_of_element_located(
+                                            (By.XPATH,
+                                             "//*[@clickable='true' and .//*[contains(@content-desc,'Preço:')]]")
+                                        )
+                                    )
+                                except Exception:
+                                    time.sleep(1)
                                 break
                         except Exception:
                             continue
@@ -210,7 +219,15 @@ class AutomacaoUber(BaseAutomacao):
                         desc = child.get_attribute("content-desc").lower()
                         if f"!{nome_categoria}!" in desc or desc.startswith(nome_categoria):
                             el.click()
-                            time.sleep(3)
+                            try:
+                                WebDriverWait(self.driver, 5).until(
+                                    EC.presence_of_element_located(
+                                        (By.XPATH,
+                                         "//*[contains(@content-desc,'capacidade estimada')]")
+                                    )
+                                )
+                            except Exception:
+                                time.sleep(1)
                             break
                     except Exception:
                         continue
@@ -227,11 +244,27 @@ class AutomacaoUber(BaseAutomacao):
                             By.XPATH, ".//*[@clickable='true']"
                         )
                         clickable.click()
-                        time.sleep(3)
+                        try:
+                            WebDriverWait(self.driver, 5).until(
+                                EC.presence_of_element_located(
+                                    (By.XPATH,
+                                     "//*[@resource-id='com.ubercab:id/line_items_container']")
+                                )
+                            )
+                        except Exception:
+                            time.sleep(1)
                     except Exception:
                         try:
                             card_view.click()
-                            time.sleep(3)
+                            try:
+                                WebDriverWait(self.driver, 5).until(
+                                    EC.presence_of_element_located(
+                                        (By.XPATH,
+                                         "//*[@resource-id='com.ubercab:id/line_items_container']")
+                                    )
+                                )
+                            except Exception:
+                                time.sleep(1)
                         except Exception:
                             pass
                 except Exception:
@@ -263,12 +296,11 @@ class AutomacaoUber(BaseAutomacao):
                         By.XPATH, "//*[@content-desc='Voltar']"
                     )
                     voltar.click()
-                    time.sleep(1)
                 except Exception:
                     pass
 
                 self.driver.back()
-                time.sleep(2)
+                time.sleep(1)
 
                 self._scroll_lista_opcoes()
 
@@ -281,7 +313,7 @@ class AutomacaoUber(BaseAutomacao):
                     )
                 except Exception:
                     self.driver.activate_app(self.app_package)
-                    time.sleep(3)
+                    time.sleep(1)
                     try:
                         self.wait.until(
                             EC.presence_of_element_located(
