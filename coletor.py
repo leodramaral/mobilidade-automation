@@ -73,25 +73,48 @@ class Coletor:
                     self.status_callback(f"Clima: {temperatura}°C - {condicao_tempo}")
 
                 for app in apps_ativos:
-                    automacao = criar_automacao(app, self.config)
-                    automacao.conectar()
-                    if device_model is None:
-                        device_model = automacao.device_model
-                        self.status_callback(f"Conectado: {device_model}")
+                    self.status_callback(f"[{app.upper()}] Iniciando coleta...")
+                    automacao = None
+                    try:
+                        automacao = criar_automacao(app, self.config)
+                        automacao.conectar()
+                        if device_model is None:
+                            device_model = automacao.device_model
+                            self.status_callback(f"Conectado: {device_model}")
 
-                    self.status_callback(f"Coletando preços do {app.upper()}...")
-                    corridas = automacao.coletar_precos(
-                        self.config['destino'],
-                        origem=self.config.get('origem', ''),
-                    )
+                        self.status_callback(f"[{app.upper()}] Coletando preços...")
+                        corridas = automacao.coletar_precos(
+                            self.config['destino'],
+                            origem=self.config.get('origem', ''),
+                        )
 
-                    capturar_metricas = self.config['appium'][app].get('capturar_metricas', False)
-                    if capturar_metricas:
-                        self.status_callback(f"Capturando métricas detalhadas do {app.upper()}...")
-                        corridas = automacao.coletar_metricas(corridas)
+                        if not corridas:
+                            self.status_callback(f"[{app.upper()}] AVISO: Nenhum preço capturado.")
+                        else:
+                            categorias = [c.categoria for c in corridas]
+                            self.status_callback(
+                                f"[{app.upper()}] OK: {len(corridas)} preço(s) capturado(s): "
+                                f"{', '.join(categorias)}"
+                            )
 
-                    repositorio.salvar(corridas, rodada, device_model, temperatura, condicao_tempo)
-                    automacao.desconectar()
+                        capturar_metricas = self.config['appium'][app].get('capturar_metricas', False)
+                        if capturar_metricas:
+                            self.status_callback(f"[{app.upper()}] Capturando métricas detalhadas...")
+                            corridas = automacao.coletar_metricas(corridas)
+
+                        repositorio.salvar(corridas, rodada, device_model, temperatura, condicao_tempo)
+                        self.status_callback(f"[{app.upper()}] Dados salvos com sucesso.")
+                    except Exception as e:
+                        tipo_erro = type(e).__name__
+                        self.status_callback(
+                            f"[{app.upper()}] ERRO na coleta ({tipo_erro}): {e}"
+                        )
+                    finally:
+                        if automacao is not None:
+                            try:
+                                automacao.desconectar()
+                            except Exception:
+                                pass
 
                 self.status_callback(f"Rodada {rodada} concluída.")
 
@@ -99,7 +122,8 @@ class Coletor:
                     self.status_callback(f"Aguardando {self.config['intervalo_segundos']}s...")
                     time.sleep(self.config['intervalo_segundos'])
         except Exception as e:
-            self.status_callback(f"Erro na coleta: {e}")
+            tipo_erro = type(e).__name__
+            self.status_callback(f"[SISTEMA] Erro geral na coleta ({tipo_erro}): {e}")
         finally:
             if hasattr(repositorio, 'fechar'):
                 repositorio.fechar()

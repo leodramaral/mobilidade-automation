@@ -197,13 +197,11 @@ class Automacao99(BaseAutomacao):
                 EC.element_to_be_clickable((By.ID, "com.taxis99:id/s_call_close_img"))
             )
             botao.click()
-            print("Dialog 'Pedindo para um amigo' detectado e fechado.")
             time.sleep(3)
         except Exception:
             try:
                 time.sleep(1)
                 self.driver.tap([(628, 718)])
-                print("Dialog 'Pedindo para um amigo' fechado via tap coordenado.")
                 time.sleep(3)
             except Exception:
                 pass
