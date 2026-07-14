@@ -9,6 +9,7 @@ from appium.options.android import UiAutomator2Options
 from appium.webdriver import Remote as AppiumDriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.common.exceptions import StaleElementReferenceException
 from selenium.webdriver.support import expected_conditions as EC
 
 from automacoes.base import BaseAutomacao
@@ -348,9 +349,14 @@ class AutomacaoUber(BaseAutomacao):
         container.click()
         time.sleep(0.5)
 
-        campo_texto = self.driver.find_element(By.ID, "com.ubercab:id/edit_text")
-        campo_texto.clear()
-        campo_texto.send_keys(endereco)
+        for tentativa_campo in range(3):
+            try:
+                campo_texto = self.driver.find_element(By.ID, "com.ubercab:id/edit_text")
+                campo_texto.clear()
+                campo_texto.send_keys(endereco)
+                break
+            except StaleElementReferenceException:
+                time.sleep(0.5)
 
         container_resultados = self.wait.until(
             EC.presence_of_element_located((By.ID, "com.ubercab:id/ub__text_search_v2_results"))
