@@ -29,13 +29,13 @@ class AutomacaoUber(BaseAutomacao):
         options.platform_name = 'Android'
         options.automation_name = 'UiAutomator2'
         options.app_package = self.app_package
-        options.app_wait_duration = 30000
+        options.app_wait_duration = 10000
         options.no_reset = True
         options.set_capability('appWaitForLaunch', False)
 
         self.driver = webdriver.Remote(self.server, options=options)
         self.device_model = self.driver.capabilities.get('deviceModel', 'desconhecido')
-        self.wait = WebDriverWait(self.driver, 10)
+        self.wait = WebDriverWait(self.driver, 5)
 
         try:
             self.wait.until(
@@ -61,13 +61,13 @@ class AutomacaoUber(BaseAutomacao):
                 origem, "com.ubercab:id/ub__location_edit_search_container_pickup"
             )
 
-        time.sleep(1)
+        time.sleep(0.5)
 
         destino = self._preencher_campo(
             destino, "com.ubercab:id/edit_text"
         )
 
-        time.sleep(2)
+        time.sleep(1)
 
         try:
             self.wait.until(
@@ -220,14 +220,14 @@ class AutomacaoUber(BaseAutomacao):
                         if f"!{nome_categoria}!" in desc or desc.startswith(nome_categoria):
                             el.click()
                             try:
-                                WebDriverWait(self.driver, 5).until(
+                                WebDriverWait(self.driver, 3).until(
                                     EC.presence_of_element_located(
                                         (By.XPATH,
                                          "//*[contains(@content-desc,'capacidade estimada')]")
                                     )
                                 )
                             except Exception:
-                                time.sleep(1)
+                                time.sleep(0.5)
                             break
                     except Exception:
                         continue
@@ -245,26 +245,26 @@ class AutomacaoUber(BaseAutomacao):
                         )
                         clickable.click()
                         try:
-                            WebDriverWait(self.driver, 5).until(
+                            WebDriverWait(self.driver, 3).until(
                                 EC.presence_of_element_located(
                                     (By.XPATH,
                                      "//*[@resource-id='com.ubercab:id/line_items_container']")
                                 )
                             )
                         except Exception:
-                            time.sleep(1)
+                            time.sleep(0.5)
                     except Exception:
                         try:
                             card_view.click()
                             try:
-                                WebDriverWait(self.driver, 5).until(
+                                WebDriverWait(self.driver, 3).until(
                                     EC.presence_of_element_located(
                                         (By.XPATH,
                                          "//*[@resource-id='com.ubercab:id/line_items_container']")
                                     )
                                 )
                             except Exception:
-                                time.sleep(1)
+                                time.sleep(0.5)
                         except Exception:
                             pass
                 except Exception:
@@ -297,7 +297,14 @@ class AutomacaoUber(BaseAutomacao):
                 self.driver.back()
                 time.sleep(1)
 
-                self._scroll_lista_opcoes()
+                # Verificar se há elementos visíveis antes de scrollar
+                xpath_elementos = "//*[@clickable='true' and .//*[contains(@content-desc,'Preço:')]]"
+                if not self._elemento_visivel(xpath_elementos):
+                    self._scroll_lista_opcoes()
+                    # Se após scroll ainda não encontrar, tentar voltar ao topo
+                    if not self._elemento_visivel(xpath_elementos):
+                        self._scroll_lista_opcoes(para_cima=True)
+                        time.sleep(0.5)
 
                 try:
                     self.wait.until(
@@ -363,10 +370,27 @@ class AutomacaoUber(BaseAutomacao):
 
         return selecionado
 
-    def _scroll_lista_opcoes(self) -> None:
+    def _scroll_lista_opcoes(self, para_cima: bool = False) -> None:
         assert self.driver is not None
 
-        self.driver.swipe(360, 900, 360, 400, 800)
+        size = self.driver.get_window_size()
+        width = size['width']
+        height = size['height']
+
+        start_y = int(height * 0.8) if not para_cima else int(height * 0.4)
+        end_y = int(height * 0.4) if not para_cima else int(height * 0.8)
+        start_x = width // 2
+
+        self.driver.swipe(start_x, start_y, start_x, end_y, 800)
+
+    def _elemento_visivel(self, xpath: str) -> bool:
+        """Verifica se um elemento está visível na tela."""
+        assert self.driver is not None
+        try:
+            elementos = self.driver.find_elements(By.XPATH, xpath)
+            return len(elementos) > 0
+        except Exception:
+            return False
 
     def _extrair_detalhamento_preco(self) -> dict:
         assert self.driver is not None
