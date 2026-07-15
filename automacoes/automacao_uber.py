@@ -18,6 +18,15 @@ from modelos.corrida import Corrida, MetricasCorrida
 
 logger = structlog.get_logger("automacao.uber")
 
+# Handler unico para metricas_debug.log, configurado no modulo
+import logging
+_metricas_handler = logging.FileHandler("metricas_debug.log", encoding="utf-8")
+_metricas_handler.setFormatter(logging.Formatter("%(asctime)s - %(message)s"))
+_metricas_logger = logging.getLogger("metricas.debug")
+_metricas_logger.setLevel(logging.DEBUG)
+_metricas_logger.addHandler(_metricas_handler)
+_metricas_logger.propagate = False
+
 
 class AutomacaoUber(BaseAutomacao):
     CATEGORIAS_PERMITIDAS = {"uberx", "moto", "comfort", "prioridade"}
@@ -151,7 +160,7 @@ class AutomacaoUber(BaseAutomacao):
         _parse_opcoes(categorias_para_extrair, resultados)
 
         if len(categorias_para_extrair) < len(self.CATEGORIAS_PERMITIDAS):
-            for _scroll in range(3):
+            for _scroll in range(1):
                 self._scroll_lista_opcoes()
                 _parse_opcoes(categorias_para_extrair, resultados)
                 if len(categorias_para_extrair) >= len(self.CATEGORIAS_PERMITIDAS):
@@ -163,23 +172,17 @@ class AutomacaoUber(BaseAutomacao):
         assert self.driver is not None
         assert self.wait is not None
 
-        page_source = self.driver.page_source
-        root = ET.fromstring(page_source)
+        def _log(msg):
+            _metricas_logger.debug(msg)
 
+        _log("=== INICIO coletar_metricas ===")
+        t_total = time.time()
+
+        # Processar apenas as categorias visiveis no momento.
+        # Se alguma categoria permitida nao estiver na tela, sera salva sem metricas.
         categorias_para_extrair = {}
-        for elem in root.iter():
-            content_desc = elem.get('content-desc', '')
-            if 'Preço:' not in content_desc:
-                continue
-            partes = content_desc.split("!")
-            for i, parte in enumerate(partes):
-                parte_lower = parte.lower().strip()
-                if parte_lower in self.CATEGORIAS_PERMITIDAS:
-                    categorias_para_extrair[parte_lower] = content_desc
-                    break
-                if "selecionado" in parte_lower and i + 1 < len(partes):
-                    categorias_para_extrair[partes[i + 1].strip().lower()] = content_desc
-                    break
+        self._parse_categorias_visiveis(categorias_para_extrair)
+        _log(f"Categorias visiveis: {list(categorias_para_extrair.keys())}")
 
         categorias_processadas = set()
 
@@ -187,101 +190,109 @@ class AutomacaoUber(BaseAutomacao):
             if nome_categoria in categorias_processadas:
                 continue
 
+            t_categoria = time.time()
+            _log(f"--- Categoria: {nome_categoria} ---")
+
             try:
-                ja_selecionado = categorias_para_extrair[nome_categoria].lower().startswith("selecionado")
+                info = categorias_para_extrair[nome_categoria]
+                nome_original = info["nome_original"]
+                ja_selecionado = info["content_desc"].lower().startswith("selecionado")
+                _log(f"Ja selecionado: {ja_selecionado}")
+
+                # XPath direto usando nome original (ex: "UberX", nao "uberx")
+                xpath_categoria = f".//*[contains(@content-desc,'!{nome_original}!')]"
+                xpath_pai = f"//*[@clickable='true' and {xpath_categoria}]"
+
+                t0 = time.time()
+                el_pai = None
+                try:
+                    el_pai = self.driver.find_element(By.XPATH, xpath_pai)
+                except Exception:
+                    # Fallback: tentar sem o "!" delimitador
+                    xpath_pai_fallback = f"//*[@clickable='true' and .//*[contains(@content-desc,'{nome_original}')]]"
+                    try:
+                        el_pai = self.driver.find_element(By.XPATH, xpath_pai_fallback)
+                    except Exception:
+                        _log(f"Elemento nao encontrado para {nome_categoria}")
+                        continue
+                _log(f"find_element (xpath direto): {time.time()-t0:.2f}s")
 
                 if not ja_selecionado:
-                    todos_elementos = self.driver.find_elements(
-                        By.XPATH,
-                        "//*[@clickable='true' and .//*[contains(@content-desc,'Preço:')]]"
-                    )
-                    for el in todos_elementos:
-                        try:
-                            child = el.find_element(By.XPATH, ".//*[contains(@content-desc,'Preço:')]")
-                            desc = child.get_attribute("content-desc").lower()
-                            if f"!{nome_categoria}!" in desc or desc.startswith(nome_categoria):
-                                el.click()
-                                try:
-                                    self.wait.until(
-                                        EC.presence_of_element_located(
-                                            (By.XPATH,
-                                             "//*[@clickable='true' and .//*[contains(@content-desc,'Preço:')]]")
-                                        )
-                                    )
-                                except Exception:
-                                    logger.debug("Timeout aguardando detalhes")
-                                    time.sleep(1)
-                                break
-                        except Exception as e:
-                            logger.debug("Falha ao clicar elemento", exc_info=True)
-                            continue
-
-                todos_elementos = self.driver.find_elements(
-                    By.XPATH,
-                    "//*[@clickable='true' and .//*[contains(@content-desc,'Preço:')]]"
-                )
-                for el in todos_elementos:
+                    t0 = time.time()
+                    _log(f"Clicando para selecionar (clique 1)...")
+                    el_pai.click()
                     try:
-                        child = el.find_element(By.XPATH, ".//*[contains(@content-desc,'Preço:')]")
-                        desc = child.get_attribute("content-desc").lower()
-                        if f"!{nome_categoria}!" in desc or desc.startswith(nome_categoria):
-                            el.click()
-                            try:
-                                WebDriverWait(self.driver, 3).until(
-                                    EC.presence_of_element_located(
-                                        (By.XPATH,
-                                         "//*[contains(@content-desc,'capacidade estimada')]")
-                                    )
-                                )
-                            except Exception:
-                                logger.debug("Timeout capacidade estimada")
-                                time.sleep(0.5)
-                            break
-                    except Exception as e:
-                        logger.debug("Falha click 2", exc_info=True)
-                        continue
-
-                try:
-                    card_view = self.driver.find_element(
-                        By.XPATH,
-                        "//com.uber.rib.core.compose.root.UberComposeView"
-                        "//*[contains(@content-desc,'Preço:') "
-                        "and contains(@content-desc,'capacidade estimada')]"
-                    )
-                    try:
-                        clickable = card_view.find_element(
-                            By.XPATH, ".//*[@clickable='true']"
+                        WebDriverWait(self.driver, 3).until(
+                            EC.staleness_of(el_pai)
                         )
-                        clickable.click()
-                        try:
-                            WebDriverWait(self.driver, 3).until(
-                                EC.presence_of_element_located(
-                                    (By.XPATH,
-                                     "//*[@resource-id='com.ubercab:id/line_items_container']")
-                                )
-                            )
-                        except Exception:
-                            logger.debug("Timeout line_items_container")
-                            time.sleep(0.5)
                     except Exception:
-                        logger.debug("Fallback click card_view")
+                        pass
+                    _log(f"Clique 1 (selecionar): {time.time()-t0:.2f}s")
+
+                    # Re-encontrar apos mudanca de estado
+                    t0 = time.time()
+                    try:
+                        el_pai = self.driver.find_element(By.XPATH, xpath_pai)
+                    except Exception:
                         try:
-                            card_view.click()
-                            try:
-                                WebDriverWait(self.driver, 3).until(
-                                    EC.presence_of_element_located(
-                                        (By.XPATH,
-                                         "//*[@resource-id='com.ubercab:id/line_items_container']")
-                                    )
-                                )
-                            except Exception:
-                                time.sleep(0.5)
+                            el_pai = self.driver.find_element(By.XPATH, xpath_pai_fallback)
                         except Exception:
-                            logger.debug("Card view não encontrado")
+                            _log(f"Elemento nao encontrado apos clique 1")
+                            continue
+                    _log(f"Re-find apos clique 1: {time.time()-t0:.2f}s")
+
+                t0 = time.time()
+                _log(f"Clicando para detalhes (clique 2)...")
+                el_pai.click()
+                try:
+                    WebDriverWait(self.driver, 3).until(
+                        EC.presence_of_element_located(
+                            (By.XPATH, "//*[contains(@content-desc,'capacidade estimada')]")
+                        )
+                    )
                 except Exception:
+                    logger.debug("Timeout capacidade estimada")
+                _log(f"Clique 2 (detalhes): {time.time()-t0:.2f}s")
+
+                # Passo 3: Abrir tela de metricas (clicar no card com "capacidade estimada")
+                t0 = time.time()
+                card_xpath = (
+                    "//com.uber.rib.core.compose.root.UberComposeView"
+                    "//*[contains(@content-desc,'capacidade estimada')]"
+                    "//*[@clickable='true']"
+                )
+                try:
+                    card_view = WebDriverWait(self.driver, 5).until(
+                        EC.element_to_be_clickable((By.XPATH, card_xpath))
+                    )
+                    _log("Card view encontrado, clicando...")
+                    card_view.click()
+                    try:
+                        WebDriverWait(self.driver, 5).until(
+                            EC.presence_of_element_located(
+                                (By.XPATH, "//*[@resource-id='com.ubercab:id/line_items_container']")
+                            )
+                        )
+                        _log("line_items_container encontrado")
+                    except Exception:
+                        _log("Timeout line_items_container, verificando title_text...")
+                        try:
+                            self.driver.find_element(
+                                By.XPATH, "//*[@resource-id='com.ubercab:id/title_text']"
+                            )
+                            _log("Elementos de metricas encontrados via title_text")
+                        except Exception:
+                            _log("Nenhum elemento de metricas encontrado")
+                    _log(f"Clique 3 (card_view): {time.time()-t0:.2f}s")
+                except Exception as e:
+                    _log(f"Card view NAO encontrado/clicavel: {e}")
                     logger.debug("Card view não encontrado")
 
+                t0 = time.time()
                 campos = self._extrair_detalhamento_preco()
+                _log(f"Extrair metricas: {campos}, {time.time()-t0:.2f}s")
+
+                # Atribuir metricas ao objeto Corrida (mesmo parciais, antes de voltar)
                 if campos:
                     for corrida in corridas:
                         if (
@@ -295,59 +306,200 @@ class AutomacaoUber(BaseAutomacao):
                                 adicional_por_km=campos.get("adicional_por_km"),
                                 custo_fixo=campos.get("custo_fixo"),
                             )
+                            _log(f"Metricas atribuidas a {corrida.categoria}: {list(campos.keys())}")
                             break
+                else:
+                    _log("Nenhuma metrica extraida para esta categoria")
 
-                try:
-                    voltar = self.driver.find_element(
-                        By.XPATH, "//*[@content-desc='Voltar']"
-                    )
-                    voltar.click()
-                except Exception:
-                    logger.debug("Botão voltar não encontrado")
+                # Voltar da tela de metricas para a lista (state-aware, sem activate_app)
+                t0 = time.time()
+                _log("Voltando para lista...")
 
-                self.driver.back()
-                time.sleep(1)
+                for tentativa in range(2):
+                    tela = self._tela_atual()
+                    _log(f"Tentativa {tentativa+1}: tela={tela}")
 
-                # Verificar se há elementos visíveis antes de scrollar
-                xpath_elementos = "//*[@clickable='true' and .//*[contains(@content-desc,'Preço:')]]"
-                if not self._elemento_visivel(xpath_elementos):
-                    self._scroll_lista_opcoes()
-                    # Se após scroll ainda não encontrar, tentar voltar ao topo
-                    if not self._elemento_visivel(xpath_elementos):
-                        self._scroll_lista_opcoes(para_cima=True)
-                        time.sleep(0.5)
-
-                try:
-                    self.wait.until(
-                        EC.presence_of_element_located(
-                            (By.XPATH,
-                             "//*[@clickable='true' and .//*[contains(@content-desc,'Preço:')]]")
-                        )
-                    )
-                except Exception:
-                    logger.debug("Timeout elementos, reabrindo app")
-                    self.driver.activate_app(self.app_package)
-                    time.sleep(1)
-                    try:
-                        self.wait.until(
-                            EC.presence_of_element_located(
-                                (By.XPATH,
-                                 "//*[@clickable='true' and .//*[contains(@content-desc,'Preço:')]]")
-                            )
-                        )
-                    except Exception:
-                        logger.warning("Elementos não encontrados, pulando categoria", categoria=nome_categoria)
+                    if tela == "lista":
                         break
 
+                    try:
+                        self.driver.back()
+                    except Exception:
+                        _log("driver.back() falhou")
+                        break
+                    time.sleep(1.5)
+
+                tela_final = self._tela_atual()
+                if tela_final != "lista":
+                    _log(f"Tela final nao e lista ({tela_final}); seguindo para proxima categoria")
+                else:
+                    _log("Lista encontrada")
+
+                _log(f"Voltar total: {time.time()-t0:.2f}s")
+
                 categorias_processadas.add(nome_categoria)
+                _log(f"--- FIM {nome_categoria}: {time.time()-t_categoria:.2f}s ---")
             except Exception as e:
+                _log(f"ERRO na categoria {nome_categoria}: {e}")
                 logger.error("Erro ao capturar métricas", categoria=nome_categoria, erro=str(e), exc_info=True)
                 try:
                     self.driver.back()
-                    time.sleep(1)
                 except Exception:
-                    logger.debug("Falha ao voltar")
+                    pass
                 continue
+
+        # Apos processar visiveis, fazer 1 scroll para revelar novas categorias
+        pendentes = self._categorias_pendentes(categorias_processadas)
+        if pendentes:
+            _log(f"Categorias pendentes: {sorted(pendentes)}; fazendo scroll...")
+            self._scroll_lista_opcoes()
+            time.sleep(1.0)
+
+            categorias_para_extrair = {}
+            self._parse_categorias_visiveis(categorias_para_extrair)
+            _log(f"Apos scroll, categorias visiveis: {list(categorias_para_extrair.keys())}")
+
+            for nome_categoria in list(categorias_para_extrair.keys()):
+                if nome_categoria in categorias_processadas:
+                    continue
+
+                t_categoria = time.time()
+                _log(f"--- Categoria: {nome_categoria} (pos-scroll) ---")
+
+                try:
+                    info = categorias_para_extrair[nome_categoria]
+                    nome_original = info["nome_original"]
+                    ja_selecionado = info["content_desc"].lower().startswith("selecionado")
+                    _log(f"Ja selecionado: {ja_selecionado}")
+
+                    xpath_categoria = f".//*[contains(@content-desc,'!{nome_original}!')]"
+                    xpath_pai = f"//*[@clickable='true' and {xpath_categoria}]"
+
+                    t0 = time.time()
+                    el_pai = None
+                    try:
+                        el_pai = self.driver.find_element(By.XPATH, xpath_pai)
+                    except Exception:
+                        xpath_pai_fallback = f"//*[@clickable='true' and .//*[contains(@content-desc,'{nome_original}')]]"
+                        try:
+                            el_pai = self.driver.find_element(By.XPATH, xpath_pai_fallback)
+                        except Exception:
+                            _log(f"Elemento nao encontrado para {nome_categoria}")
+                            continue
+                    _log(f"find_element: {time.time()-t0:.2f}s")
+
+                    if not ja_selecionado:
+                        t0 = time.time()
+                        el_pai.click()
+                        try:
+                            WebDriverWait(self.driver, 3).until(EC.staleness_of(el_pai))
+                        except Exception:
+                            pass
+                        _log(f"Clique 1: {time.time()-t0:.2f}s")
+
+                        t0 = time.time()
+                        try:
+                            el_pai = self.driver.find_element(By.XPATH, xpath_pai)
+                        except Exception:
+                            try:
+                                el_pai = self.driver.find_element(By.XPATH, xpath_pai_fallback)
+                            except Exception:
+                                _log("Elemento nao encontrado apos clique 1")
+                                continue
+                        _log(f"Re-find: {time.time()-t0:.2f}s")
+
+                    t0 = time.time()
+                    el_pai.click()
+                    try:
+                        WebDriverWait(self.driver, 3).until(
+                            EC.presence_of_element_located(
+                                (By.XPATH, "//*[contains(@content-desc,'capacidade estimada')]")
+                            )
+                        )
+                    except Exception:
+                        logger.debug("Timeout capacidade estimada")
+                    _log(f"Clique 2: {time.time()-t0:.2f}s")
+
+                    t0 = time.time()
+                    card_xpath = (
+                        "//com.uber.rib.core.compose.root.UberComposeView"
+                        "//*[contains(@content-desc,'capacidade estimada')]"
+                        "//*[@clickable='true']"
+                    )
+                    try:
+                        card_view = WebDriverWait(self.driver, 5).until(
+                            EC.element_to_be_clickable((By.XPATH, card_xpath))
+                        )
+                        _log("Card view encontrado, clicando...")
+                        card_view.click()
+                        try:
+                            WebDriverWait(self.driver, 5).until(
+                                EC.presence_of_element_located(
+                                    (By.XPATH, "//*[@resource-id='com.ubercab:id/line_items_container']")
+                                )
+                            )
+                        except Exception:
+                            _log("Timeout line_items_container")
+                        _log(f"Clique 3: {time.time()-t0:.2f}s")
+                    except Exception as e:
+                        _log(f"Card view NAO encontrado: {e}")
+
+                    t0 = time.time()
+                    campos = self._extrair_detalhamento_preco()
+                    _log(f"Extrair metricas: {campos}, {time.time()-t0:.2f}s")
+
+                    if campos:
+                        for corrida in corridas:
+                            if (
+                                corrida.categoria.lower() == nome_categoria.lower()
+                                and corrida.app == "uber"
+                            ):
+                                corrida.metricas = MetricasCorrida(
+                                    preco_base=campos.get("preco_base"),
+                                    preco_minimo=campos.get("preco_minimo"),
+                                    adicional_por_minuto=campos.get("adicional_por_minuto"),
+                                    adicional_por_km=campos.get("adicional_por_km"),
+                                    custo_fixo=campos.get("custo_fixo"),
+                                )
+                                _log(f"Metricas atribuidas a {corrida.categoria}: {list(campos.keys())}")
+                                break
+                    else:
+                        _log("Nenhuma metrica extraida")
+
+                    t0 = time.time()
+                    _log("Voltando para lista...")
+                    for tentativa in range(2):
+                        tela = self._tela_atual()
+                        _log(f"Tentativa {tentativa+1}: tela={tela}")
+                        if tela == "lista":
+                            break
+                        try:
+                            self.driver.back()
+                        except Exception:
+                            _log("driver.back() falhou")
+                            break
+                        time.sleep(1.5)
+
+                    tela_final = self._tela_atual()
+                    _log(f"Tela final: {tela_final}; voltar: {time.time()-t0:.2f}s")
+
+                    categorias_processadas.add(nome_categoria)
+                    _log(f"--- FIM {nome_categoria}: {time.time()-t_categoria:.2f}s ---")
+                except Exception as e:
+                    _log(f"ERRO na categoria {nome_categoria}: {e}")
+                    logger.error("Erro ao capturar métricas", categoria=nome_categoria, erro=str(e), exc_info=True)
+                    try:
+                        self.driver.back()
+                    except Exception:
+                        pass
+                    continue
+
+        # Logar categorias permitidas que ficaram sem metricas
+        nao_visiveis = self._categorias_pendentes(categorias_processadas)
+        if nao_visiveis:
+            _log(f"Categorias sem metricas extraidas (nao visiveis): {sorted(nao_visiveis)}")
+
+        _log(f"=== FIM coletar_metricas: {time.time()-t_total:.2f}s ===")
 
         return corridas
 
@@ -412,6 +564,54 @@ class AutomacaoUber(BaseAutomacao):
         except Exception:
             return False
 
+    def _parse_categorias_visiveis(self, categorias_para_extrair: dict) -> None:
+        """Varre o page_source atual e adiciona categorias permitidas ao dicionario."""
+        assert self.driver is not None
+        page_source = self.driver.page_source
+        root = ET.fromstring(page_source)
+
+        for elem in root.iter():
+            content_desc = elem.get('content-desc', '')
+            if 'Preço:' not in content_desc:
+                continue
+            partes = content_desc.split("!")
+            for i, parte in enumerate(partes):
+                parte_lower = parte.lower().strip()
+                if parte_lower in self.CATEGORIAS_PERMITIDAS:
+                    if parte_lower not in categorias_para_extrair:
+                        categorias_para_extrair[parte_lower] = {
+                            "content_desc": content_desc,
+                            "nome_original": parte.strip(),
+                        }
+                    break
+                if "selecionado" in parte_lower and i + 1 < len(partes):
+                    cat_lower = partes[i + 1].strip().lower()
+                    if cat_lower in self.CATEGORIAS_PERMITIDAS and cat_lower not in categorias_para_extrair:
+                        categorias_para_extrair[cat_lower] = {
+                            "content_desc": content_desc,
+                            "nome_original": partes[i + 1].strip(),
+                        }
+                    break
+
+    def _categorias_pendentes(self, categorias_processadas: set) -> set:
+        """Retorna as categorias permitidas que ainda nao foram detalhadas."""
+        return self.CATEGORIAS_PERMITIDAS - categorias_processadas
+
+    def _tela_atual(self) -> str:
+        """Identifica a tela atual baseado no page_source."""
+        assert self.driver is not None
+        try:
+            page_source = self.driver.page_source
+            if "line_items_container" in page_source:
+                return "metricas"
+            if "capacidade estimada" in page_source:
+                return "detalhes"
+            if "Preço:" in page_source:
+                return "lista"
+            return "desconhecida"
+        except Exception:
+            return "erro"
+
     def _extrair_detalhamento_preco(self) -> dict:
         assert self.driver is not None
 
@@ -423,6 +623,7 @@ class AutomacaoUber(BaseAutomacao):
                 "//*[@resource-id='com.ubercab:id/line_items_container']"
                 "/android.view.ViewGroup",
             )
+            _metricas_logger.debug(f"  _extrair: {len(grupos)} grupos encontrados em line_items_container")
             for grupo in grupos:
                 try:
                     title_elem = grupo.find_element(
@@ -443,6 +644,8 @@ class AutomacaoUber(BaseAutomacao):
                     )
                     valor = float(value_text)
 
+                    _metricas_logger.debug(f"  _extrair: campo='{title}' valor={valor}")
+
                     title_lower = title.lower()
                     if "preço base" in title_lower or "preco base" in title_lower:
                         campos["preco_base"] = valor
@@ -461,10 +664,10 @@ class AutomacaoUber(BaseAutomacao):
                     elif "custo fixo" in title_lower:
                         campos["custo_fixo"] = valor
                 except Exception as e:
-                    logger.debug("Erro parse campo métrica", exc_info=True)
+                    _metricas_logger.debug(f"  _extrair: erro parse grupo: {e}")
                     continue
-        except Exception:
-            logger.debug("Grupos de métricas não encontrados")
+        except Exception as e:
+            _metricas_logger.debug(f"  _extrair: line_items_container nao encontrado: {e}")
 
         return campos
 

@@ -26,3 +26,5 @@ build_venv/
 # Build artifacts
 dist/
 build/
+
+metricas_debug.log

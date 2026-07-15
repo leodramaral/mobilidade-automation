@@ -8,15 +8,11 @@ from persistencia.repositorio_banco import RepositorioBanco
 from servicos.clima import ClimaServico
 
 logger = structlog.get_logger("coletor")
-
-
 def listar_apps_ativos(config: dict) -> list[str]:
     return [
         app for app, cfg in config['appium'].items()
         if isinstance(cfg, dict) and cfg.get('active', False)
     ]
-
-
 def criar_automacao(app: str, config: dict):
     config_appium = config['appium'][app].copy()
     config_appium['server'] = config['appium']['server']
@@ -26,13 +22,9 @@ def criar_automacao(app: str, config: dict):
     if app == 'uber':
         return AutomacaoUber(config_appium)
     raise ValueError(f"App não suportado: {app}")
-
-
 def criar_repositorio(config):
     caminho = config['persistencia']['caminho']
     return RepositorioBanco(caminho)
-
-
 class Coletor:
     def __init__(self, config: dict):
         self.config = config
@@ -105,10 +97,17 @@ class Coletor:
                             )
                             resultados_rodada[app] = len(corridas)
 
-                        capturar_metricas = self.config['appium'][app].get('capturar_metricas', False)
+                        capturar_metricas = self.config["appium"][app].get("capturar_metricas", False)
                         if capturar_metricas:
                             logger.info("Capturando métricas detalhadas", app=app)
-                            corridas = automacao.coletar_metricas(corridas)
+                            try:
+                                corridas = automacao.coletar_metricas(corridas)
+                            except Exception as e:
+                                logger.warning(
+                                    "Erro ao capturar métricas, salvando preços sem métricas",
+                                    app=app,
+                                    erro=str(e),
+                                )
 
                         repositorio.salvar(corridas, rodada, device_model, temperatura, condicao_tempo)
                         logger.info("Dados salvos", app=app)
