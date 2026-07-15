@@ -3,8 +3,11 @@ import sqlite3
 from datetime import datetime
 from typing import List, Optional
 
+import structlog
 from persistencia.base import BaseRepositorio
 from modelos.corrida import Corrida, Snapshot
+
+logger = structlog.get_logger("repositorio")
 
 
 class RepositorioBanco(BaseRepositorio):
@@ -51,8 +54,8 @@ class RepositorioBanco(BaseRepositorio):
         )
         self.conn.commit()
 
-        for c in corridas:
-            print(f"  -> {c.categoria}: R${c.preco} ({c.estimativa} min)")
+        categorias = [c.categoria for c in corridas]
+        logger.info("Corridas salvas", categorias=categorias)
 
     def listar_todos(self) -> List[Snapshot]:
         assert self.conn is not None

@@ -2,7 +2,10 @@ import sqlite3
 from datetime import datetime, timedelta
 from typing import Optional
 
+import structlog
 import requests
+
+logger = structlog.get_logger("clima")
 
 
 class ClimaServico:
@@ -28,20 +31,19 @@ class ClimaServico:
 
     def consultar(self, lat: float, lon: float, api_key: str) -> tuple[float, str]:
         chave_cache = f"{lat},{lon}"
-        print(f"[Clima] Consultando clima para: lat={lat}, lon={lon}")
+        logger.info("Consultando clima", lat=lat, lon=lon)
         cache = self._buscar_cache(chave_cache)
         if cache is not None:
-            print(f"[Clima] Usando cache: {cache[0]}°C - {cache[1]}")
+            logger.info("Usando cache", temperatura=cache[0], condicao=cache[1])
             return cache
 
-        print(f"[Clima] Cache expirado ou inexistente, chamando API...")
+        logger.info("Cache expirado, chamando API")
         resultado = self._buscar_api(lat, lon, api_key)
         if resultado is not None:
             self._salvar_cache(chave_cache, resultado["temperatura"], resultado["condicao"], resultado["condicao_texto"])
-            print(f"[Clima] Sucesso: {resultado['temperatura']}°C - {resultado['condicao']}")
             return (resultado["temperatura"], resultado["condicao"])
 
-        print(f"[Clima] Falha ao consultar clima")
+        logger.error("Falha ao consultar clima")
         return (0.0, "Erro ao consultar clima")
 
     def _buscar_cache(self, chave: str) -> Optional[tuple[float, str]]:
@@ -62,7 +64,7 @@ class ClimaServico:
         return None
 
     def _buscar_api(self, lat: float, lon: float, api_key: str) -> Optional[dict]:
-        print(f"[Clima] Chamando API: lat={lat}, lon={lon}")
+        logger.debug("Chamando API", lat=lat, lon=lon)
         try:
             resp = requests.get(
                 self.API_URL,
@@ -75,26 +77,26 @@ class ClimaServico:
                 },
                 timeout=10,
             )
-            print(f"[Clima] Resposta API: status={resp.status_code}")
+            logger.debug("Resposta API", status=resp.status_code)
             resp.raise_for_status()
             dados = resp.json()
 
             temperatura = round(dados["main"]["temp"], 1)
             condicao = dados["weather"][0]["description"]
-            texto = f"{temperatura}°C - {condicao}"
 
             return {
                 "temperatura": temperatura,
                 "condicao": condicao,
-                "condicao_texto": texto,
+                "condicao_texto": f"{temperatura}°C - {condicao}",
             }
         except requests.exceptions.HTTPError as e:
-            print(f"[Clima] Erro HTTP: {e} (status {e.response.status_code if e.response else '?'})")
+            status = e.response.status_code if e.response else '?'
+            logger.error("Erro HTTP", status=status, erro=str(e))
             if e.response is not None:
-                print(f"[Clima] Corpo da resposta: {e.response.text[:500]}")
+                logger.debug("Corpo da resposta", body=e.response.text[:500])
             return None
         except Exception as e:
-            print(f"[Clima] Erro ao consultar API: {type(e).__name__}: {e}")
+            logger.error("Erro ao consultar API", erro_tipo=type(e).__name__, erro=str(e))
             return None
 
     def _salvar_cache(self, chave: str, temperatura: float, condicao: str, condicao_texto: str) -> None:

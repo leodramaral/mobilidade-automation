@@ -24,5 +24,8 @@
     "api_key": "SUA_CHAVE_AQUI",
     "lat": -23.5505,
     "lon": -46.6333
+  },
+  "logging": {
+    "level": "INFO"
   }
 }

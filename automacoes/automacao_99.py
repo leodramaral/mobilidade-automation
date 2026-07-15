@@ -4,6 +4,7 @@ import xml.etree.ElementTree as ET
 from datetime import datetime
 from typing import List, Optional
 
+import structlog
 from appium import webdriver
 from appium.options.android import UiAutomator2Options
 from appium.webdriver import Remote as AppiumDriver
@@ -13,6 +14,8 @@ from selenium.webdriver.support import expected_conditions as EC
 
 from automacoes.base import BaseAutomacao
 from modelos.corrida import Corrida
+
+logger = structlog.get_logger("automacao.99")
 
 
 class Automacao99(BaseAutomacao):
@@ -31,19 +34,19 @@ class Automacao99(BaseAutomacao):
         options.no_reset = True
         options.set_capability('appWaitForLaunch', False)
 
-        print("Conectando ao Appium Server...")
+        logger.info("Conectando ao Appium Server")
         self.driver = webdriver.Remote(self.server, options=options)
         self.device_model = self.driver.capabilities.get('deviceModel', 'desconhecido')
-        print(f"Dispositivo conectado: {self.device_model}")
+        logger.info("Dispositivo conectado", device_model=self.device_model)
         self.wait = WebDriverWait(self.driver, 20)
 
-        print("Aguardando app carregar...")
+        logger.info("Aguardando app carregar")
         try:
             self.wait.until(
                 EC.presence_of_element_located((By.ID, "com.taxis99:id/oc_home_where_to_tv"))
             )
         except Exception:
-            print("App não abriu automaticamente, tentando abrir manualmente...")
+            logger.warning("App não abriu, tentando abrir manualmente")
             self.driver.activate_app(self.app_package)
             self.wait.until(
                 EC.presence_of_element_located((By.ID, "com.taxis99:id/oc_home_where_to_tv"))
@@ -92,8 +95,8 @@ class Automacao99(BaseAutomacao):
                         break
                 if nome and endereco:
                     origem = f"{nome}, {endereco}"
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug("Falha parse endereço origem", exc_info=True)
 
             self.driver.find_element(By.ID, "com.taxis99:id/layout_item").click()
 
@@ -125,8 +128,8 @@ class Automacao99(BaseAutomacao):
                     break
             if nome and endereco:
                 destino = f"{nome}, {endereco}"
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug("Falha parse endereço destino", exc_info=True)
 
         self.driver.find_element(By.ID, "com.taxis99:id/layout_item").click()
 
@@ -181,7 +184,8 @@ class Automacao99(BaseAutomacao):
                     destino=destino,
                     timestamp=datetime.now(),
                 ))
-            except Exception:
+            except Exception as e:
+                logger.debug("Erro parse container", exc_info=True)
                 continue
 
         return resultados
@@ -199,12 +203,13 @@ class Automacao99(BaseAutomacao):
             botao.click()
             time.sleep(3)
         except Exception:
+            logger.debug("Dialog não encontrado, tentando tap alternativo")
             try:
                 time.sleep(1)
                 self.driver.tap([(628, 718)])
                 time.sleep(3)
             except Exception:
-                pass
+                logger.debug("Tap alternativo também falhou")
 
     def voltar_tela_inicial(self) -> None:
         assert self.driver is not None
@@ -217,10 +222,10 @@ class Automacao99(BaseAutomacao):
                 By.ID, "com.taxis99:id/oc_home_where_to_tv"
             )
             if len(elementos_home) > 0:
-                print("Retornou à tela inicial com sucesso!")
+                logger.info("Retornou à tela inicial")
                 return
 
-        print("Aviso: Não conseguiu validar a volta para a tela inicial")
+        logger.warning("Não conseguiu validar volta à tela inicial")
 
     def desconectar(self) -> None:
         if self.driver:

@@ -4,6 +4,7 @@ import xml.etree.ElementTree as ET
 from datetime import datetime
 from typing import List, Optional
 
+import structlog
 from appium import webdriver
 from appium.options.android import UiAutomator2Options
 from appium.webdriver import Remote as AppiumDriver
@@ -14,6 +15,8 @@ from selenium.webdriver.support import expected_conditions as EC
 
 from automacoes.base import BaseAutomacao
 from modelos.corrida import Corrida, MetricasCorrida
+
+logger = structlog.get_logger("automacao.uber")
 
 
 class AutomacaoUber(BaseAutomacao):
@@ -77,7 +80,7 @@ class AutomacaoUber(BaseAutomacao):
                 )
             )
         except Exception:
-            pass
+            logger.debug("Timeout esperando preço")
 
         categorias_para_extrair = {}
         resultados = []
@@ -141,7 +144,8 @@ class AutomacaoUber(BaseAutomacao):
                         timestamp=datetime.now(),
                     ))
                     categorias_para_extrair[categoria.lower()] = content_desc
-                except Exception:
+                except Exception as e:
+                    logger.debug("Erro parse preço", exc_info=True)
                     continue
 
         _parse_opcoes(categorias_para_extrair, resultados)
@@ -205,9 +209,11 @@ class AutomacaoUber(BaseAutomacao):
                                         )
                                     )
                                 except Exception:
+                                    logger.debug("Timeout aguardando detalhes")
                                     time.sleep(1)
                                 break
-                        except Exception:
+                        except Exception as e:
+                            logger.debug("Falha ao clicar elemento", exc_info=True)
                             continue
 
                 todos_elementos = self.driver.find_elements(
@@ -228,9 +234,11 @@ class AutomacaoUber(BaseAutomacao):
                                     )
                                 )
                             except Exception:
+                                logger.debug("Timeout capacidade estimada")
                                 time.sleep(0.5)
                             break
-                    except Exception:
+                    except Exception as e:
+                        logger.debug("Falha click 2", exc_info=True)
                         continue
 
                 try:
@@ -253,8 +261,10 @@ class AutomacaoUber(BaseAutomacao):
                                 )
                             )
                         except Exception:
+                            logger.debug("Timeout line_items_container")
                             time.sleep(0.5)
                     except Exception:
+                        logger.debug("Fallback click card_view")
                         try:
                             card_view.click()
                             try:
@@ -267,9 +277,9 @@ class AutomacaoUber(BaseAutomacao):
                             except Exception:
                                 time.sleep(0.5)
                         except Exception:
-                            pass
+                            logger.debug("Card view não encontrado")
                 except Exception:
-                    pass
+                    logger.debug("Card view não encontrado")
 
                 campos = self._extrair_detalhamento_preco()
                 if campos:
@@ -293,7 +303,7 @@ class AutomacaoUber(BaseAutomacao):
                     )
                     voltar.click()
                 except Exception:
-                    pass
+                    logger.debug("Botão voltar não encontrado")
 
                 self.driver.back()
                 time.sleep(1)
@@ -315,6 +325,7 @@ class AutomacaoUber(BaseAutomacao):
                         )
                     )
                 except Exception:
+                    logger.debug("Timeout elementos, reabrindo app")
                     self.driver.activate_app(self.app_package)
                     time.sleep(1)
                     try:
@@ -325,16 +336,17 @@ class AutomacaoUber(BaseAutomacao):
                             )
                         )
                     except Exception:
+                        logger.warning("Elementos não encontrados, pulando categoria", categoria=nome_categoria)
                         break
 
                 categorias_processadas.add(nome_categoria)
             except Exception as e:
-                print(f"Erro ao capturar {nome_categoria}: {e}")
+                logger.error("Erro ao capturar métricas", categoria=nome_categoria, erro=str(e), exc_info=True)
                 try:
                     self.driver.back()
                     time.sleep(1)
                 except Exception:
-                    pass
+                    logger.debug("Falha ao voltar")
                 continue
 
         return corridas
@@ -356,6 +368,7 @@ class AutomacaoUber(BaseAutomacao):
                 campo_texto.send_keys(endereco)
                 break
             except StaleElementReferenceException:
+                logger.debug("Elemento stale ao preencher campo")
                 time.sleep(0.5)
 
         container_resultados = self.wait.until(
@@ -371,7 +384,8 @@ class AutomacaoUber(BaseAutomacao):
                 selecionado = primeiro_resultado.get_attribute("content-desc") or endereco
                 primeiro_resultado.click()
                 break
-            except Exception:
+            except Exception as e:
+                logger.debug("Falha ao selecionar resultado", exc_info=True)
                 time.sleep(0.5)
 
         return selecionado
@@ -446,10 +460,11 @@ class AutomacaoUber(BaseAutomacao):
                         campos["adicional_por_km"] = valor
                     elif "custo fixo" in title_lower:
                         campos["custo_fixo"] = valor
-                except Exception:
+                except Exception as e:
+                    logger.debug("Erro parse campo métrica", exc_info=True)
                     continue
         except Exception:
-            pass
+            logger.debug("Grupos de métricas não encontrados")
 
         return campos
 

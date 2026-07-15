@@ -4,6 +4,11 @@ import sys
 import webbrowser
 import threading
 
+import structlog
+from logging_config import configurar_logging
+
+logger = structlog.get_logger("run_dashboard")
+
 
 def get_base_path():
     if getattr(sys, 'frozen', False):
@@ -44,6 +49,7 @@ def _matar_porta(porta):
 
 
 def main():
+    configurar_logging()
     base = get_base_path()
     cwd = os.getcwd()
     _matar_porta(8501)
@@ -80,5 +86,5 @@ if __name__ == '__main__':
     try:
         main()
     except Exception as e:
-        print(f"\nERRO: {e}")
+        logger.critical("Erro ao iniciar dashboard", erro=str(e))
         input("\nPressione ENTER para fechar...")

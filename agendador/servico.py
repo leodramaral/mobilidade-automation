@@ -4,7 +4,10 @@ from apscheduler.triggers.date import DateTrigger
 from apscheduler.schedulers.blocking import BlockingScheduler
 import copy
 
+import structlog
 from coletor import Coletor
+
+logger = structlog.get_logger("agendador")
 
 
 class AgendadorService:
@@ -29,7 +32,7 @@ class AgendadorService:
 
     def _executar_agendamento(self, agendamento):
         config = self._merge_config(agendamento.get("config_override", {}))
-        coletor = Coletor(config, status_callback=print)
+        coletor = Coletor(config)
         coletor.executar()
 
     def registrar_jobs(self):
@@ -37,19 +40,19 @@ class AgendadorService:
         for idx, agend in enumerate(self.agendamentos):
             data_execucao = self._parse_data(agend["quando"])
             if data_execucao <= agora:
-                print(f"[Pulado] {agend['quando']} - data/hora ja passou")
+                logger.info("Agendamento pulado", quando=agend['quando'], motivo="data/hora já passou")
                 continue
             trigger = DateTrigger(run_date=data_execucao)
             job_id = f"coleta_{idx}"
             self.scheduler.add_job(self._executar_agendamento, trigger, args=[agend], id=job_id)
             origem = agend['config_override'].get('origem', '?')
             destino = agend['config_override'].get('destino', '?')
-            print(f"[Agendado] {agend['quando']} - {origem} -> {destino}")
+            logger.info("Agendamento registrado", quando=agend['quando'], origem=origem, destino=destino)
 
     def iniciar(self):
         self.registrar_jobs()
         jobs = self.scheduler.get_jobs()
-        print(f"\nAgendador iniciado com {len(jobs)} jobs.")
+        logger.info("Agendador iniciado", jobs=len(jobs))
         if not jobs:
-            print("Nenhum agendamento futuro encontrado em agendamentos.json")
+            logger.warning("Nenhum agendamento futuro encontrado em agendamentos.json")
         self.scheduler.start()

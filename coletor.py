@@ -1,10 +1,13 @@
 import time
-from typing import Callable, Optional
+from typing import Optional
 
+import structlog
 from automacoes.automacao_99 import Automacao99
 from automacoes.automacao_uber import AutomacaoUber
 from persistencia.repositorio_banco import RepositorioBanco
 from servicos.clima import ClimaServico
+
+logger = structlog.get_logger("coletor")
 
 
 def listar_apps_ativos(config: dict) -> list[str]:
@@ -31,9 +34,8 @@ def criar_repositorio(config):
 
 
 class Coletor:
-    def __init__(self, config: dict, status_callback: Optional[Callable[[str], None]] = None):
+    def __init__(self, config: dict):
         self.config = config
-        self.status_callback = status_callback or print
         self._parar = False
         self.rodada_atual = 0
         self.total_rodadas = config.get('limite_consultas', 1)
@@ -63,68 +65,88 @@ class Coletor:
                     break
 
                 self.rodada_atual = rodada
-                agora = time.strftime('%H:%M:%S')
-                self.status_callback(f"[{agora}] Rodada {rodada}/{self.total_rodadas}...")
+                logger.info("Iniciando rodada", rodada=rodada, total=self.total_rodadas)
 
                 temperatura = None
                 condicao_tempo = ''
                 if clima_servico is not None:
                     temperatura, condicao_tempo = clima_servico.consultar(lat, lon, api_key)
-                    self.status_callback(f"Clima: {temperatura}°C - {condicao_tempo}")
+                    logger.info("Clima consultado", temperatura=temperatura, condicao=condicao_tempo)
+
+                # Rastrear resultados por app para o resumo
+                resultados_rodada = {}
 
                 for app in apps_ativos:
-                    self.status_callback(f"[{app.upper()}] Iniciando coleta...")
+                    logger.info("Iniciando coleta", app=app)
                     automacao = None
                     try:
                         automacao = criar_automacao(app, self.config)
                         automacao.conectar()
                         if device_model is None:
                             device_model = automacao.device_model
-                            self.status_callback(f"Conectado: {device_model}")
+                            logger.info("Dispositivo conectado", device_model=device_model)
 
-                        self.status_callback(f"[{app.upper()}] Coletando preços...")
+                        logger.info("Coletando preços", app=app)
                         corridas = automacao.coletar_precos(
                             self.config['destino'],
                             origem=self.config.get('origem', ''),
                         )
 
                         if not corridas:
-                            self.status_callback(f"[{app.upper()}] AVISO: Nenhum preço capturado.")
+                            logger.warning("Nenhum preço capturado", app=app)
+                            resultados_rodada[app] = 0
                         else:
                             categorias = [c.categoria for c in corridas]
-                            self.status_callback(
-                                f"[{app.upper()}] OK: {len(corridas)} preço(s) capturado(s): "
-                                f"{', '.join(categorias)}"
+                            logger.info(
+                                "Preços capturados",
+                                app=app,
+                                quantidade=len(corridas),
+                                categorias=categorias
                             )
+                            resultados_rodada[app] = len(corridas)
 
                         capturar_metricas = self.config['appium'][app].get('capturar_metricas', False)
                         if capturar_metricas:
-                            self.status_callback(f"[{app.upper()}] Capturando métricas detalhadas...")
+                            logger.info("Capturando métricas detalhadas", app=app)
                             corridas = automacao.coletar_metricas(corridas)
 
                         repositorio.salvar(corridas, rodada, device_model, temperatura, condicao_tempo)
-                        self.status_callback(f"[{app.upper()}] Dados salvos com sucesso.")
+                        logger.info("Dados salvos", app=app)
                     except Exception as e:
-                        tipo_erro = type(e).__name__
-                        self.status_callback(
-                            f"[{app.upper()}] ERRO na coleta ({tipo_erro}): {e}"
+                        resultados_rodada[app] = 0
+                        logger.error(
+                            "Erro na coleta",
+                            app=app,
+                            erro_tipo=type(e).__name__,
+                            erro=str(e),
+                            exc_info=True
                         )
                     finally:
                         if automacao is not None:
                             try:
                                 automacao.desconectar()
                             except Exception:
-                                pass
+                                logger.debug("Falha ao desconectar", app=app)
 
-                self.status_callback(f"Rodada {rodada} concluída.")
+                # Resumo da rodada
+                resumo_parts = []
+                for app, qtd in resultados_rodada.items():
+                    resumo_parts.append(f"{app}={qtd}preco(s)")
+                resumo = "  ".join(resumo_parts)
+                logger.info("Rodada concluída", rodada=rodada, resumo=resumo)
 
                 if rodada < self.config['limite_consultas'] and not self._parar:
-                    self.status_callback(f"Aguardando {self.config['intervalo_segundos']}s...")
-                    time.sleep(self.config['intervalo_segundos'])
+                    intervalo = self.config['intervalo_segundos']
+                    logger.info("Aguardando próxima rodada", segundos=intervalo)
+                    time.sleep(intervalo)
         except Exception as e:
-            tipo_erro = type(e).__name__
-            self.status_callback(f"[SISTEMA] Erro geral na coleta ({tipo_erro}): {e}")
+            logger.error(
+                "Erro geral na coleta",
+                erro_tipo=type(e).__name__,
+                erro=str(e),
+                exc_info=True
+            )
         finally:
             if hasattr(repositorio, 'fechar'):
                 repositorio.fechar()
-            self.status_callback("Coleta finalizada.")
+            logger.info("Coleta finalizada")
