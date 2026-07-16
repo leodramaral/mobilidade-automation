@@ -1,3 +1,4 @@
+import os
 import time
 from typing import Optional
 
@@ -44,7 +45,7 @@ class Coletor:
         config_clima = self.config.get('openweather', {})
         lat = config_clima.get('lat')
         lon = config_clima.get('lon')
-        api_key = config_clima.get('api_key', '')
+        api_key = os.environ.get("OPENWEATHER_API_KEY", "")
         if lat is not None and lon is not None and api_key and api_key != 'SUA_CHAVE_AQUI':
             assert repositorio.conn is not None
             clima_servico = ClimaServico(repositorio.conn)

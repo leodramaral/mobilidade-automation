@@ -1,5 +1,4 @@
 from datetime import datetime
-from zoneinfo import ZoneInfo
 from apscheduler.triggers.date import DateTrigger
 from apscheduler.schedulers.blocking import BlockingScheduler
 import copy
@@ -11,15 +10,13 @@ logger = structlog.get_logger("agendador")
 
 
 class AgendadorService:
-    def __init__(self, config_base, agendamentos, timezone_str="America/Manaus"):
+    def __init__(self, config_base, agendamentos):
         self.config_base = config_base
         self.agendamentos = agendamentos
-        self.tz = ZoneInfo(timezone_str)
-        self.scheduler = BlockingScheduler(timezone=self.tz)
+        self.scheduler = BlockingScheduler()
 
     def _parse_data(self, quando_str):
-        naive = datetime.strptime(quando_str, "%Y-%m-%d %H:%M")
-        return naive.replace(tzinfo=self.tz)
+        return datetime.strptime(quando_str, "%Y-%m-%d %H:%M")
 
     def _merge_config(self, override):
         config = copy.deepcopy(self.config_base)
@@ -36,7 +33,7 @@ class AgendadorService:
         coletor.executar()
 
     def registrar_jobs(self):
-        agora = datetime.now(self.tz)
+        agora = datetime.now()
         for idx, agend in enumerate(self.agendamentos):
             data_execucao = self._parse_data(agend["quando"])
             if data_execucao <= agora:
@@ -44,7 +41,7 @@ class AgendadorService:
                 continue
             trigger = DateTrigger(run_date=data_execucao)
             job_id = f"coleta_{idx}"
-            self.scheduler.add_job(self._executar_agendamento, trigger, args=[agend], id=job_id)
+            self.scheduler.add_job(self._executar_agendamento, trigger, args=[agend], id=job_id, misfire_grace_time=None)
             origem = agend['config_override'].get('origem', '?')
             destino = agend['config_override'].get('destino', '?')
             logger.info("Agendamento registrado", quando=agend['quando'], origem=origem, destino=destino)

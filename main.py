@@ -1,5 +1,8 @@
 import json
+import os
 import sys
+
+from dotenv import load_dotenv
 from pathlib import Path
 
 import structlog
@@ -15,6 +18,7 @@ logger = structlog.get_logger("main")
 
 
 def carregar_config():
+    load_dotenv()
     if not CAMINHO_CONFIG.exists():
         logger.critical("Arquivo config.json não encontrado", caminho=str(CAMINHO_CONFIG))
         logger.info("Copie o exemplo: cp config.json.example config.json")
@@ -33,11 +37,11 @@ def carregar_config():
         sys.exit(1)
 
     config_clima = config.get("openweather", {})
-    api_key = config_clima.get("api_key", "")
     lat = config_clima.get("lat")
     lon = config_clima.get("lon")
+    api_key = os.environ.get("OPENWEATHER_API_KEY", "")
     if not api_key or api_key == "SUA_CHAVE_AQUI":
-        logger.warning("Chave da API OpenWeather não configurada. Coleta de clima será desabilitada.")
+        logger.warning("Chave da API OpenWeather não configurada. Defina OPENWEATHER_API_KEY no .env")
     elif lat is None or lon is None:
         logger.warning("Coordenadas (lat/lon) não configuradas no openweather. Coleta de clima será desabilitada.")
 

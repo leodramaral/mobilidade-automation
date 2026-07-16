@@ -4,6 +4,7 @@ import sys
 import webbrowser
 import threading
 
+from dotenv import load_dotenv
 import structlog
 from logging_config import configurar_logging
 
@@ -49,6 +50,7 @@ def _matar_porta(porta):
 
 
 def main():
+    load_dotenv()
     configurar_logging()
     base = get_base_path()
     cwd = os.getcwd()

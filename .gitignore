@@ -3,6 +3,9 @@
 # Config com chaves sensíveis
 config.json
 
+# Variáveis de ambiente (secrets)
+.env
+
 # Agendamentos com dados pessoais
 agendamentos.json
 
