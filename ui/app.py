@@ -1,5 +1,6 @@
 import json
 import sys
+from datetime import date
 from pathlib import Path
 
 import pandas as pd
@@ -69,54 +70,42 @@ df = pd.DataFrame(linhas)
 
 apps_unicos = sorted(df["App"].unique())
 categorias_unicas = sorted(df["Categoria"].unique())
+datas_unicas = sorted(df["Timestamp"].dt.date.unique(), reverse=True)
+dias_opcoes = {d.strftime("%d/%m/%Y"): d for d in datas_unicas}
 
-col1, col2 = st.columns(2)
+# ── Resumo ────────────────────────────────────────────────────────────────────
+resumo = resumo_geral(snapshots)
+
+if resumo:
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("Snapshots", resumo["total_snapshots"])
+    c2.metric("Corridas", resumo["total_corridas"])
+
+    st.caption(f"Periodo: {resumo['periodo_inicio'].strftime('%d/%m/%Y %H:%M')} a {resumo['periodo_fim'].strftime('%d/%m/%Y %H:%M')}")
+
+col1, col2, col3 = st.columns(3)
 with col1:
-    filtro_categoria = st.multiselect("Categoria", options=categorias_unicas, default=[])
+    filtro_categoria = st.multiselect("Categoria", options=categorias_unicas, default=["UberX", "Pop"])
 with col2:
     filtro_app = st.multiselect("App", options=apps_unicos, default=[])
+with col3:
+    hoje_str = date.today().strftime("%d/%m/%Y")
+    filtro_dia = st.multiselect("Dia", options=list(dias_opcoes.keys()), default=[hoje_str] if hoje_str in dias_opcoes else [])
 
 df_filtrado = df.copy()
 if filtro_categoria:
     df_filtrado = df_filtrado[df_filtrado["Categoria"].isin(filtro_categoria)]
 if filtro_app:
     df_filtrado = df_filtrado[df_filtrado["App"].isin(filtro_app)]
-df_filtrado = df_filtrado.sort_values("ID")
+if filtro_dia:
+    dias_selecionados = [dias_opcoes[d] for d in filtro_dia]
+    df_filtrado = df_filtrado[df_filtrado["Timestamp"].dt.date.isin(dias_selecionados)]
+df_filtrado = df_filtrado.sort_values("ID", ascending=False)
 
 # ── Abas ─────────────────────────────────────────────────────────────────────
-aba_geral, aba_categoria, aba_rota, aba_dados = st.tabs([
-    "Visao Geral", "Por Categoria", "Por Rota", "Dados"
+aba_dados, aba_categoria, aba_rota = st.tabs([
+    "Dados", "Por Categoria", "Por Rota"
 ])
-
-# ── Visao Geral ──────────────────────────────────────────────────────────────
-with aba_geral:
-    resumo = resumo_geral(snapshots)
-
-    if resumo:
-        c1, c2, c3, c4 = st.columns(4)
-        c1.metric("Snapshots", resumo["total_snapshots"])
-        c2.metric("Corridas", resumo["total_corridas"])
-        c3.metric("Rotas", resumo["rotas_monitoradas"])
-        c4.metric("Preco Medio", f"R$ {resumo['preco_medio_geral']:.2f}".replace(".", ","))
-
-        st.caption(f"Periodo: {resumo['periodo_inicio'].strftime('%d/%m/%Y %H:%M')} a {resumo['periodo_fim'].strftime('%d/%m/%Y %H:%M')}")
-        st.caption(f"Categorias: {', '.join(resumo['categorias'])}")
-
-    # Grafico de evolucao temporal
-    st.subheader("Evolucao do Preco Medio por Categoria")
-    df_tempo = df_filtrado.copy()
-    df_tempo["Data"] = df_tempo["Timestamp"].dt.date
-    evolucao = (
-        df_tempo.groupby(["Data", "Categoria"])["Preco"]
-        .mean()
-        .reset_index()
-        .sort_values("Data")
-    )
-    if not evolucao.empty:
-        st.line_chart(
-            evolucao.pivot(index="Data", columns="Categoria", values="Preco"),
-            use_container_width=True,
-        )
 
 # ── Por Categoria ────────────────────────────────────────────────────────────
 with aba_categoria:
@@ -189,6 +178,10 @@ with aba_rota:
             }),
             use_container_width=True,
             hide_index=True,
+            column_config={
+                "Origem": st.column_config.TextColumn(width="small"),
+                "Destino": st.column_config.TextColumn(width="small"),
+            },
         )
 
         # Ranking de rotas mais caras
@@ -209,8 +202,7 @@ with aba_rota:
 with aba_dados:
     st.subheader("Dados Filtrados")
 
-    df_exibicao = df_filtrado[[
-        "ID", "Timestamp", "Categoria", "Preco", "Estimativa",
+    df_exibicao = df_filtrado[[ "Timestamp", "Categoria", "Preco", "Estimativa",
         "Origem", "Destino", "App", "Pr. Base", "Pr. Minimo",
         "R$/min", "R$/km", "Custo Fixo",
     ]].copy()
@@ -232,7 +224,10 @@ with aba_dados:
         lambda x: f"R$ {x:.2f}".replace(".", ",") if pd.notna(x) else ""
     )
 
-    st.dataframe(df_exibicao, use_container_width=True, hide_index=True)
+    st.dataframe(df_exibicao, use_container_width=True, hide_index=True, column_config={
+        "Origem": st.column_config.TextColumn(width="medium"),
+        "Destino": st.column_config.TextColumn(width="medium"),
+    })
 
     # Download JSON
     dados_filtrados = []
