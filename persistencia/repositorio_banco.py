@@ -130,3 +130,12 @@ class RepositorioBanco(BaseRepositorio):
         )
         self.conn.commit()
         logger.info("Locais salvos", quantidade=len(locais))
+
+    def listar_cidades_completas(self) -> List[tuple[str, str]]:
+        """Retorna pares (cidade, uf) que possuem exatamente 6 locais cadastrados."""
+        assert self.conn is not None
+        cursor = self.conn.execute(
+            "SELECT cidade, uf FROM locais_coleta "
+            "GROUP BY cidade, uf HAVING COUNT(*) = 6 ORDER BY cidade"
+        )
+        return [(row[0], row[1]) for row in cursor.fetchall()]

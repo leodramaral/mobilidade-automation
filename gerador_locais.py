@@ -1,4 +1,3 @@
-"""Gerador de localizações — descoberta de C1 e C2 via OpenStreetMap."""
 import math
 import time
 
@@ -74,14 +73,15 @@ def _overpass_query(query: str) -> list:
 
 def buscar_c1(min_lat: float, max_lat: float, min_lon: float, max_lon: float,
               centro_lat: float, centro_lon: float, cidade: str, uf: str):
-    """Descobre C1: igreja ou praça mais próxima do centro da cidade."""
+    """Descobre C1: praça, supermercado ou shopping mais próximo do centro da cidade."""
     from modelos.local_coleta import LocalColeta
 
     query = f"""
     [out:json];
     (
-      node[amenity=place_of_worship][religion=christian]({min_lat},{min_lon},{max_lat},{max_lon});
       node[place=square]({min_lat},{min_lon},{max_lat},{max_lon});
+      node[shop=supermarket]({min_lat},{min_lon},{max_lat},{max_lon});
+      node[shop=mall]({min_lat},{min_lon},{max_lat},{max_lon});
     );
     out center;
     """
@@ -89,7 +89,7 @@ def buscar_c1(min_lat: float, max_lat: float, min_lon: float, max_lon: float,
     elementos = _overpass_query(query)
 
     if not elementos:
-        print("⚠️  Nenhuma igreja/praça encontrada — usando centro da cidade como C1")
+        print("⚠️  Nenhum local encontrado — usando centro da cidade como C1")
         nome = f"Centro, {cidade}"
         return LocalColeta(
             codigo="C1", endereco=f"Centro, {cidade}, {uf}",
@@ -104,7 +104,7 @@ def buscar_c1(min_lat: float, max_lat: float, min_lon: float, max_lon: float,
     lon = mais_perto.get("lon", centro_lon)
     nome = mais_perto.get("tags", {}).get("name", f"Centro, {cidade}")
     rua = _obter_rua(lat, lon)
-    print(f"⛪ C1: {nome} ({lat}, {lon}) — {len(elementos)} igrejas/praças analisadas")
+    print(f"🏙️  C1: {nome} ({lat}, {lon}) — {len(elementos)} locais analisados")
     return LocalColeta(codigo="C1", endereco=f"{nome}, {rua}, {cidade}, {uf}", cidade=cidade, uf=uf, lat=lat, lon=lon, tipo="central")
 
 
@@ -300,156 +300,6 @@ def buscar_bairros(c1, c2, e1, e2, cidade: str, uf: str):
     return m1, m2
 
 
-def gerar_agendamentos(cidade: str, uf: str) -> list:
-    """Gera 18 agendamentos (9 rotas × 2 períodos) a partir dos pontos no banco."""
-    import json
-    import random
-    from datetime import datetime, timedelta
-    from persistencia.repositorio_banco import RepositorioBanco
-
-    repo = RepositorioBanco("mobilidade.db")
-    repo.inicializar()
-    locais = repo.listar_locais(cidade, uf)
-    repo.fechar()
-
-    if len(locais) != 6:
-        raise RuntimeError(f"São necessários 6 locais, mas há {len(locais)} no banco")
-
-    pts = {l.codigo: l for l in locais}
-    C1, C2 = pts["C1"], pts["C2"]
-    E1, E2 = pts["E1"], pts["E2"]
-    M1, M2 = pts["M1"], pts["M2"]
-
-    # 9 rotas fixas
-    rotas = [
-        (C1, C2),   # 1
-        (E1, C1),   # 2
-        (E2, C1),   # 3
-        (E1, E2),   # 4
-        (M1, C1),   # 5
-        (M2, C1),   # 6
-        (M1, E1),   # 7
-        (M1, M2),   # 8
-        (M1, E2),   # 9
-    ]
-
-    agora = datetime.now().replace(second=0, microsecond=0)
-    hoje = agora.date()
-
-    # Janelas disponíveis: 5 dias a partir de hoje
-    dias = [hoje + timedelta(days=i) for i in range(5)]
-
-    agendamentos = []
-    idx_manha = 0   # qual rota usar para o próximo agendamento da manhã
-    idx_tarde = 0   # qual rota usar para o próximo agendamento da tarde
-
-    for dia in dias:
-        if idx_manha >= 9 and idx_tarde >= 9:
-            break
-
-        # ── Manhã 06:00–08:50 ──
-        inicio_manha = datetime(dia.year, dia.month, dia.day, 6, 0)
-        fim_manha = datetime(dia.year, dia.month, dia.day, 8, 50)
-
-        # Pula manhã do dia 0 se já passou do fim_manha
-        if dia == hoje and agora >= fim_manha:
-            idx_manha = 9
-        else:
-            # No dia 0, ponto de partida é max(06:00, agora); nos demais, é 06:00.
-            # O buffer de 5min aplica-se a partir do último agendamento do dia anterior,
-            # mas como a manhã começa cedo, isso raramente interfere.
-            if dia == hoje:
-                ultimo_fim_manha = max(inicio_manha, agora) - timedelta(minutes=5)
-            else:
-                ultimo_fim_manha = inicio_manha - timedelta(minutes=5)
-
-            while idx_manha < 9:
-                origem_rota, destino_rota = rotas[idx_manha]
-                limite = random.randint(3, 10)
-                duracao = timedelta(seconds=(limite - 1) * 60)
-
-                horario = ultimo_fim_manha + timedelta(minutes=5)
-                if horario + duracao > fim_manha:
-                    break  # não cabe mais, tenta próximo dia
-
-                # Manhã: RES→POI direto, POI→POI ordem natural, RES→RES direto
-                origem, destino = _direcao("manhã", origem_rota, destino_rota, C1, C2)
-
-                agendamentos.append({
-                    "quando": horario.strftime("%Y-%m-%d %H:%M"),
-                    "config_override": {
-                        "origem": origem.endereco,
-                        "destino": destino.endereco,
-                        "limite_consultas": limite,
-                    },
-                })
-                ultimo_fim_manha = horario + duracao
-                idx_manha += 1
-
-        # ── Tarde 17:00–18:50 ──
-        inicio_tarde = datetime(dia.year, dia.month, dia.day, 17, 0)
-        fim_tarde = datetime(dia.year, dia.month, dia.day, 18, 50)
-
-        # Pula tarde do dia 0 se já passou do fim_tarde
-        if dia == hoje and agora >= fim_tarde:
-            idx_tarde = 9
-        else:
-            if dia == hoje:
-                ultimo_fim_tarde = max(inicio_tarde, agora) - timedelta(minutes=5)
-            else:
-                ultimo_fim_tarde = inicio_tarde - timedelta(minutes=5)
-
-            while idx_tarde < 9:
-                origem_rota, destino_rota = rotas[idx_tarde]
-                limite = random.randint(3, 10)
-                duracao = timedelta(seconds=(limite - 1) * 60)
-
-                horario = ultimo_fim_tarde + timedelta(minutes=5)
-                if horario + duracao > fim_tarde:
-                    break  # não cabe mais
-
-                # Tarde: POI→RES invertido, POI→POI invertido, RES→RES invertido
-                origem, destino = _direcao("tarde", origem_rota, destino_rota, C1, C2)
-
-                agendamentos.append({
-                    "quando": horario.strftime("%Y-%m-%d %H:%M"),
-                    "config_override": {
-                        "origem": origem.endereco,
-                        "destino": destino.endereco,
-                        "limite_consultas": limite,
-                    },
-                })
-                ultimo_fim_tarde = horario + duracao
-                idx_tarde += 1
-
-        if idx_manha >= 9 and idx_tarde >= 9:
-            break
-
-    # Escrever arquivo
-    with open("agendamentos.json", "w", encoding="utf-8") as f:
-        json.dump({"agendamentos": agendamentos}, f, ensure_ascii=False, indent=2)
-
-    print(f"\n📋 {len(agendamentos)} agendamentos gerados em agendamentos.json")
-    for a in agendamentos:
-        o = a["config_override"]["origem"]
-        d = a["config_override"]["destino"]
-        print(f"   {a['quando']}  {o} → {d}")
-
-    return agendamentos
-
-
-def _direcao(periodo: str, origem, destino, C1, C2):
-    """Determina origem/destino conforme período e tipo da rota."""
-    pois = {C1.codigo, C2.codigo}
-    if origem.codigo in pois and destino.codigo in pois:
-        # POI → POI: manhã natural, tarde invertido
-        return (C1, C2) if periodo == "manhã" else (C2, C1)
-    if periodo == "manhã":
-        return (origem, destino)
-    else:
-        return (destino, origem)
-
-
 def _solicitar_cidade_uf() -> tuple[str, str]:
     """Pede cidade e UF ao usuário via input(), com validação."""
     while True:
@@ -482,7 +332,7 @@ def main(cidade: str, uf: str):
         repo.fechar()
         resposta = input("\nDeseja usar estas localizações ou buscar novas? (1=usar / 2=buscar novas): ").strip()
         if resposta == "1":
-            gerar_agendamentos(cidade, uf)
+            print(f"\n💡 Agora gere os agendamentos com:\n   python gerador_agendamentos.py")
             return
         # 2 (ou qualquer outra coisa) → redescobrir
         cache = {}
@@ -534,8 +384,7 @@ def main(cidade: str, uf: str):
         print(f"💾 6 locais salvos no banco")
 
     repo.fechar()
-
-    gerar_agendamentos(cidade, uf)
+    print(f"\n💡 Agora gere os agendamentos com:\n   python gerador_agendamentos.py")
 
 
 if __name__ == "__main__":
