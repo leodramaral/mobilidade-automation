@@ -6,6 +6,7 @@ from typing import List, Optional
 import structlog
 from persistencia.base import BaseRepositorio
 from modelos.corrida import Corrida, Snapshot
+from modelos.local_coleta import LocalColeta
 
 logger = structlog.get_logger("repositorio")
 
@@ -34,6 +35,25 @@ class RepositorioBanco(BaseRepositorio):
         self.conn.execute("CREATE INDEX IF NOT EXISTS idx_snapshots_timestamp ON snapshots(timestamp)")
         self.conn.execute("CREATE INDEX IF NOT EXISTS idx_snapshots_device ON snapshots(device_model)")
         self.conn.execute("CREATE INDEX IF NOT EXISTS idx_snapshots_app ON snapshots(app)")
+        self.conn.execute("""
+            CREATE TABLE IF NOT EXISTS locais_coleta (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                codigo TEXT NOT NULL,
+                endereco TEXT NOT NULL,
+                cidade TEXT NOT NULL,
+                uf TEXT NOT NULL,
+                lat REAL NOT NULL,
+                lon REAL NOT NULL,
+                tipo TEXT NOT NULL,
+                criado_em TEXT DEFAULT (datetime('now')),
+                UNIQUE(codigo, cidade, uf)
+            )
+        """)
+        # Migração: remove coluna 'nome' se existir (versão antiga do schema)
+        try:
+            self.conn.execute("ALTER TABLE locais_coleta DROP COLUMN nome")
+        except sqlite3.OperationalError:
+            pass
         self.conn.commit()
 
     def salvar(self, corridas: List[Corrida], rodada: int, device_model: str = '', temperatura: Optional[float] = None, condicao_tempo: str = '') -> None:
@@ -81,3 +101,32 @@ class RepositorioBanco(BaseRepositorio):
     def fechar(self) -> None:
         if self.conn:
             self.conn.close()
+
+    # ── locais_coleta ─────────────────────────────────────────────
+
+    def listar_locais(self, cidade: str, uf: str) -> List[LocalColeta]:
+        assert self.conn is not None
+        cursor = self.conn.execute(
+            "SELECT codigo, endereco, cidade, uf, lat, lon, tipo "
+            "FROM locais_coleta WHERE cidade = ? AND uf = ? ORDER BY codigo",
+            (cidade, uf),
+        )
+        return [
+            LocalColeta(
+                codigo=row[0], endereco=row[1],
+                cidade=row[2], uf=row[3], lat=row[4], lon=row[5], tipo=row[6],
+            )
+            for row in cursor.fetchall()
+        ]
+
+    def salvar_locais(self, locais: List[LocalColeta]) -> None:
+        assert self.conn is not None
+        if not locais:
+            return
+        self.conn.executemany(
+            "INSERT OR REPLACE INTO locais_coleta (codigo, endereco, cidade, uf, lat, lon, tipo) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?)",
+            [(l.codigo, l.endereco, l.cidade, l.uf, l.lat, l.lon, l.tipo) for l in locais],
+        )
+        self.conn.commit()
+        logger.info("Locais salvos", quantidade=len(locais))
