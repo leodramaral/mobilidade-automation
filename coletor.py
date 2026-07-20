@@ -39,8 +39,13 @@ class Coletor:
         lock_file = open("/tmp/coleta.lock", "w")
         lock_file.write(f"pid={os.getpid()} ts={datetime.now().isoformat()}\n")
         lock_file.flush()
-        fcntl.flock(lock_file.fileno(), fcntl.LOCK_EX)
-        logger.info("Lock adquirido para coleta")
+        try:
+            fcntl.flock(lock_file.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+            logger.info("Lock adquirido para coleta")
+        except BlockingIOError:
+            logger.warning("Outro processo esta segurando o lock, aguardando...")
+            fcntl.flock(lock_file.fileno(), fcntl.LOCK_EX)
+            logger.info("Lock adquirido para coleta")
 
         apps_ativos = listar_apps_ativos(self.config)
         iniciar_debug()
@@ -68,6 +73,9 @@ class Coletor:
             resultados_rodada = {}
 
             for app in apps_ativos:
+                if self._parar:
+                    logger.info("Coleta interrompida pelo usuario")
+                    break
                 logger.info("Iniciando coleta", app=app)
                 automacao = None
                 try:
@@ -128,6 +136,9 @@ class Coletor:
 
             resumo = "  ".join(f"{app}={qtd}preco(s)" for app, qtd in resultados_rodada.items())
             logger.info("Coleta concluída", resumo=resumo)
+        except KeyboardInterrupt:
+            self._parar = True
+            logger.info("Coleta interrompida pelo usuario")
         except Exception as e:
             logger.error(
                 "Erro geral na coleta",

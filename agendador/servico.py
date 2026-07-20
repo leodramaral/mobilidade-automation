@@ -14,6 +14,8 @@ class AgendadorService:
         self.config_base = config_base
         self.agendamentos = agendamentos
         self.scheduler = BlockingScheduler()
+        self._jobs_total = 0
+        self._jobs_concluidos = 0
 
     def _parse_data(self, quando_str):
         return datetime.strptime(quando_str, "%Y-%m-%d %H:%M")
@@ -28,9 +30,15 @@ class AgendadorService:
         return config
 
     def _executar_agendamento(self, agendamento):
-        config = self._merge_config(agendamento.get("config_override", {}))
-        coletor = Coletor(config)
-        coletor.executar()
+        try:
+            config = self._merge_config(agendamento.get("config_override", {}))
+            coletor = Coletor(config)
+            coletor.executar()
+        finally:
+            self._jobs_concluidos += 1
+            if self._jobs_concluidos >= self._jobs_total:
+                logger.info("Todas as coletas concluidas, encerrando agendador")
+                self.scheduler.shutdown(wait=False)
 
     def registrar_jobs(self):
         agora = datetime.now()
@@ -52,6 +60,8 @@ class AgendadorService:
             origem = agend['config_override'].get('origem', '?')
             destino = agend['config_override'].get('destino', '?')
             logger.info("Agendamento registrado", quando=quando, origem=origem, destino=destino)
+
+        self._jobs_total = len(self.scheduler.get_jobs())
 
     def iniciar(self):
         self.registrar_jobs()

@@ -66,52 +66,7 @@ def _criar_agendamento(rotas, sentido, quando, C1, C2):
     return agendamentos
 
 
-def gerar_modo_sequencial(locais, sentidos):
-    """Gera agendamentos sequenciais com 'quando' = 'now'.
-
-    sentidos: lista com 'centro' e/ou 'bairro'
-    """
-    C1 = next(l for l in locais if l.codigo == "C1")
-    C2 = next(l for l in locais if l.codigo == "C2")
-    rotas = _gerar_rotas(locais)
-
-    agendamentos = []
-    for sentido in sentidos:
-        agendamentos.extend(_criar_agendamento(rotas, sentido, "now", C1, C2))
-
-    return agendamentos
-
-
-def gerar_modo_programado(locais, preset):
-    """Gera agendamentos programados para o dia seguinte, 9 por momento."""
-    C1 = next(l for l in locais if l.codigo == "C1")
-    C2 = next(l for l in locais if l.codigo == "C2")
-    rotas = _gerar_rotas(locais)
-
-    amanha = datetime.now().date() + timedelta(days=1)
-
-    agendamentos = []
-    for hora, sentido in preset["momentos"]:
-        data = datetime(amanha.year, amanha.month, amanha.day)
-        quando = data.strftime(f"%Y-%m-%d {hora}")
-        agendamentos.extend(_criar_agendamento(rotas, sentido, quando, C1, C2))
-
-    return agendamentos
-
-
-def salvar_agendamentos(agendamentos):
-    with open("agendamentos.json", "w", encoding="utf-8") as f:
-        json.dump({"agendamentos": agendamentos}, f, ensure_ascii=False, indent=2)
-
-    print(f"\n📋 {len(agendamentos)} agendamentos gerados em agendamentos.json")
-    for a in agendamentos:
-        o = a["config_override"]["origem"]
-        d = a["config_override"]["destino"]
-        print(f"   {a['quando']}  {o} → {d}")
-
-
 def _escolher_cidade(cidades):
-    """Exibe as cidades disponiveis e pede para o usuario escolher."""
     print("\n📌 Cidades com 6 locais cadastrados:")
     for i, (cidade, uf) in enumerate(cidades, 1):
         print(f"   {i}. {cidade}/{uf}")
@@ -129,9 +84,8 @@ def _escolher_cidade(cidades):
 
 
 def _escolher_modo():
-    """Pede o modo de geracao ao usuario."""
     print("\nModo de geracao:")
-    print("   1. sequencial  — execucao imediata (python main.py)")
+    print("   1. sequencial  — execucao imediata (python main.py coleta iniciar)")
     for nome, info in PRESETS_PROGRAMADOS.items():
         print(f"   p.{nome}  — {info['descricao']}")
     while True:
@@ -144,11 +98,10 @@ def _escolher_modo():
 
 
 def _escolher_sentido():
-    """Pergunta quais sentidos incluir no modo sequencial."""
     print("\nSentido dos trajetos:")
     print("   1. todos (18 rotas)")
-    print("   2. so sentido centro (9 rotas)")
-    print("   3. so sentido bairro (9 rotas)")
+    print("   2. so sentido centro (9 rotas, E/M→C)")
+    print("   3. so sentido bairro (9 rotas, C→E/M)")
     while True:
         escolha = input("Escolha (1, 2 ou 3): ").strip()
         if escolha == "1":
@@ -160,7 +113,7 @@ def _escolher_sentido():
         print("⚠️  Digite 1, 2 ou 3.")
 
 
-def main():
+def gerar() -> None:
     repo = RepositorioBanco("mobilidade.db")
     repo.inicializar()
     cidades = repo.listar_cidades_completas()
@@ -168,7 +121,7 @@ def main():
 
     if not cidades:
         print("❌ Nenhuma cidade com 6 locais cadastrados encontrada.")
-        print("   Execute primeiro: python gerador_locais.py")
+        print("   Execute primeiro: python main.py locais gerar")
         sys.exit(1)
 
     cidade, uf = _escolher_cidade(cidades) if len(cidades) > 1 else cidades[0]
@@ -181,7 +134,7 @@ def main():
 
     if len(locais) != 6:
         print(f"❌ Sao necessarios 6 locais cadastrados para {cidade}/{uf}, mas ha {len(locais)}.")
-        print(f"   Execute primeiro: python gerador_locais.py")
+        print(f"   Execute primeiro: python main.py locais gerar")
         sys.exit(1)
 
     if modo == "sequencial":
@@ -189,15 +142,34 @@ def main():
         labels = {"centro": "E/M→C", "bairro": "C→E/M"}
         sentido_str = " + ".join(labels[s] for s in sentidos)
         print(f"\n▶️  Modo SEQUENCIAL — {sentido_str}")
-        agendamentos = gerar_modo_sequencial(locais, sentidos)
+
+        C1 = next(l for l in locais if l.codigo == "C1")
+        C2 = next(l for l in locais if l.codigo == "C2")
+        rotas = _gerar_rotas(locais)
+        agendamentos = []
+        for sentido in sentidos:
+            agendamentos.extend(_criar_agendamento(rotas, sentido, "now", C1, C2))
     else:
         preset = PRESETS_PROGRAMADOS[preset_nome]
         print(f"\n📅 Modo PROGRAMADO — {preset['descricao']}")
-        print(f"   Data: {datetime.now().date() + timedelta(days=1)} (dia seguinte)")
-        agendamentos = gerar_modo_programado(locais, preset)
+        amanha = datetime.now().date() + timedelta(days=1)
+        print(f"   Data: {amanha} (dia seguinte)")
 
-    salvar_agendamentos(agendamentos)
+        C1 = next(l for l in locais if l.codigo == "C1")
+        C2 = next(l for l in locais if l.codigo == "C2")
+        rotas = _gerar_rotas(locais)
 
+        agendamentos = []
+        for hora, sentido in preset["momentos"]:
+            data = datetime(amanha.year, amanha.month, amanha.day)
+            quando = data.strftime(f"%Y-%m-%d {hora}")
+            agendamentos.extend(_criar_agendamento(rotas, sentido, quando, C1, C2))
 
-if __name__ == "__main__":
-    main()
+    with open("agendamentos.json", "w", encoding="utf-8") as f:
+        json.dump({"agendamentos": agendamentos}, f, ensure_ascii=False, indent=2)
+
+    print(f"\n📋 {len(agendamentos)} agendamentos gerados em agendamentos.json")
+    for a in agendamentos:
+        o = a["config_override"]["origem"]
+        d = a["config_override"]["destino"]
+        print(f"   {a['quando']}  {o} → {d}")

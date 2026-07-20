@@ -1,7 +1,12 @@
 import math
+import sys
 import time
 
 import requests
+import structlog
+from persistencia.repositorio_banco import RepositorioBanco
+
+logger = structlog.get_logger("cli.locais")
 
 NOMES_GENERICOS = [
     "posto ipiranga", "posto shell", "posto br", "posto ale", "posto petrobras",
@@ -55,7 +60,7 @@ def haversine(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
 
 
 def buscar_bounding_box(cidade: str, uf: str) -> tuple:
-    """Retorna (min_lat, max_lat, min_lon, max_lon, centro_lat, centro_lon) para a cidade."""
+    """Retorna (min_lat, max_lat, min_lon, max_lon, centro_lat, centro_lon, diametro_km) para a cidade."""
     query = f"{cidade},{uf}"
     resp = requests.get(
         f"{NOMINATIM_URL}/search",
@@ -68,7 +73,6 @@ def buscar_bounding_box(cidade: str, uf: str) -> tuple:
     if not dados:
         raise ValueError(f"Cidade não encontrada no Nominatim: {cidade}/{uf}")
 
-    # Escolher o resultado com menor bounding box (evita fronteira estadual)
     def _area_bbox(item):
         bbox = item.get("boundingbox", [0, 0, 0, 0])
         return abs(float(bbox[1]) - float(bbox[0])) * abs(float(bbox[3]) - float(bbox[2]))
@@ -224,7 +228,7 @@ def _obter_rua(lat: float, lon: float) -> str:
 
 def _reverse_geocode(lat: float, lon: float, cidade: str) -> str:
     """Obtém o nome do bairro/local via Nominatim reverse geocode."""
-    time.sleep(1)  # Rate limit
+    time.sleep(1)
     resp = requests.get(
         f"{NOMINATIM_URL}/reverse",
         params={"lat": lat, "lon": lon, "format": "json", "zoom": 18},
@@ -252,10 +256,7 @@ def _reverse_geocode(lat: float, lon: float, cidade: str) -> str:
 def buscar_extremos(min_lat: float, max_lat: float, min_lon: float, max_lon: float,
                     centro_lat: float, centro_lon: float, cidade: str, uf: str,
                     diametro_km: float, usadas: set = None):
-    """Descobre E1 e E2: extremos opostos dentro do perímetro urbano.
-
-    usadas: set de tuplas (lat, lon) arredondadas a 7 casas que não podem ser reutilizadas.
-    """
+    """Descobre E1 e E2: extremos opostos dentro do perímetro urbano."""
     from modelos.local_coleta import LocalColeta
 
     usadas = usadas or set()
@@ -280,7 +281,6 @@ def buscar_extremos(min_lat: float, max_lat: float, min_lon: float, max_lon: flo
         and (round(e.get("lat", 0), 7), round(e.get("lon", 0), 7)) not in usadas
     ]
 
-    # Raio urbano adaptativo: começa proporcional ao diâmetro, cresce até ter ≥6 POIs
     raio_km = max(diametro_km * 0.45, 3.0)
     while True:
         pois = [
@@ -300,7 +300,6 @@ def buscar_extremos(min_lat: float, max_lat: float, min_lon: float, max_lon: flo
         nome_e1 = _reverse_geocode(e1_lat, e1_lon, cidade)
         nome_e2 = _reverse_geocode(e2_lat, e2_lon, cidade)
     else:
-        # E1: POI na direção noroeste com maior distância do centro
         def _score_nw(e):
             elat = e.get("lat", centro_lat)
             elon = e.get("lon", centro_lon)
@@ -311,7 +310,6 @@ def buscar_extremos(min_lat: float, max_lat: float, min_lon: float, max_lon: flo
         e1_lon = e1.get("lon", centro_lon)
         nome_e1 = e1.get("tags", {}).get("name", "Extremo 1")
 
-        # E2: POI com maior projeção negativa no vetor centro→E1
         vec_lat = e1_lat - centro_lat
         vec_lon = e1_lon - centro_lon
         vec_len = math.sqrt(vec_lat**2 + vec_lon**2)
@@ -344,17 +342,12 @@ def buscar_extremos(min_lat: float, max_lat: float, min_lon: float, max_lon: flo
 
 def buscar_bairros(c1, c2, e1, e2, cidade: str, uf: str, diametro_km: float,
                    usadas: set = None):
-    """Descobre M1 e M2: pontos médios entre extremos e centros, ancorados em POIs reais.
-
-    usadas: set de tuplas (lat, lon) arredondadas a 7 casas que não podem ser reutilizadas.
-    """
+    """Descobre M1 e M2: pontos médios entre extremos e centros, ancorados em POIs reais."""
     from modelos.local_coleta import LocalColeta
 
     usadas = usadas or set()
 
     def _warp_para_poi(lat_base, lon_base, raio_m=800):
-        """Busca um POI não-genérico próximo ao ponto base, excluindo os já usados;
-        se não achar, retorna o ponto base."""
         query = f"""
         [out:json];
         (
@@ -416,9 +409,11 @@ def _solicitar_cidade_uf() -> tuple[str, str]:
     return cidade, uf
 
 
-def main(cidade: str, uf: str):
-    """Descobre C1, C2, E1, E2, M1, M2 para a cidade informada, com cache no banco SQLite."""
-    from persistencia.repositorio_banco import RepositorioBanco
+def gerar(cidade: str | None = None, uf: str | None = None) -> None:
+    """Gera os 6 locais (C1, C2, E1, E2, M1, M2) para uma cidade."""
+
+    if cidade is None or uf is None:
+        cidade, uf = _solicitar_cidade_uf()
 
     repo = RepositorioBanco("mobilidade.db")
     repo.inicializar()
@@ -427,45 +422,44 @@ def main(cidade: str, uf: str):
     cache = {l.codigo: l for l in locais}
 
     if len(cache) == 6:
-        print(f"📌 Todos os 6 locais já cadastrados para {cidade}/{uf}:")
+        print(f"📌 Todos os 6 locais ja cadastrados para {cidade}/{uf}:")
         for l in locais:
             print(f"   {l.codigo} — {l.endereco} ({l.lat}, {l.lon})")
         repo.fechar()
-        resposta = input("\nDeseja usar estas localizações ou buscar novas? (1=usar / 2=buscar novas): ").strip()
+        resposta = input("\nDeseja usar estas localizacoes ou buscar novas? (1=usar / 2=buscar novas): ").strip()
         if resposta == "1":
-            print(f"\n💡 Agora gere os agendamentos com:\n   python gerador_agendamentos.py")
+            print(f"\n💡 Agora gere os agendamentos com:\n   python main.py agendamentos gerar")
             return
-        # 2 (ou qualquer outra coisa) → redescobrir
         cache = {}
         repo = RepositorioBanco("mobilidade.db")
         repo.inicializar()
 
     for codigo in ["C1", "C2", "E1", "E2", "M1", "M2"]:
         if codigo in cache:
-            print(f"📌 {codigo} já cadastrado: {cache[codigo].endereco} ({cache[codigo].lat}, {cache[codigo].lon})")
+            print(f"📌 {codigo} ja cadastrado: {cache[codigo].endereco} "
+                  f"({cache[codigo].lat}, {cache[codigo].lon})")
 
     bbox = buscar_bounding_box(cidade, uf)
     min_lat, max_lat, min_lon, max_lon, centro_lat, centro_lon, diametro_km = bbox
 
-    # C1
     c1 = cache.get("C1")
     if not c1:
         c1 = buscar_c1(min_lat, max_lat, min_lon, max_lon, centro_lat, centro_lon, cidade, uf)
         time.sleep(1)
 
-    # C2
     c2 = cache.get("C2")
     if not c2:
-        c2 = buscar_c2(min_lat, max_lat, min_lon, max_lon, centro_lat, centro_lon, c1.lat, c1.lon, cidade, uf, diametro_km)
+        c2 = buscar_c2(min_lat, max_lat, min_lon, max_lon, centro_lat, centro_lon,
+                       c1.lat, c1.lon, cidade, uf, diametro_km)
 
     usadas = {(c1.lat, c1.lon), (c2.lat, c2.lon)}
 
-    # E1, E2
     e1 = cache.get("E1")
     e2 = cache.get("E2")
     if not e1 or not e2:
-        time.sleep(3)  # Rate limit Overpass
-        e1_novo, e2_novo = buscar_extremos(min_lat, max_lat, min_lon, max_lon, centro_lat, centro_lon, cidade, uf, diametro_km, usadas)
+        time.sleep(3)
+        e1_novo, e2_novo = buscar_extremos(min_lat, max_lat, min_lon, max_lon,
+                                           centro_lat, centro_lon, cidade, uf, diametro_km, usadas)
         if not e1:
             e1 = e1_novo
         if not e2:
@@ -473,7 +467,6 @@ def main(cidade: str, uf: str):
 
     usadas |= {(e1.lat, e1.lon), (e2.lat, e2.lon)}
 
-    # M1, M2
     m1 = cache.get("M1")
     m2 = cache.get("M2")
     if not m1 or not m2:
@@ -505,9 +498,4 @@ def main(cidade: str, uf: str):
         print(f"💾 6 locais salvos no banco")
 
     repo.fechar()
-    print(f"\n💡 Agora gere os agendamentos com:\n   python gerador_agendamentos.py")
-
-
-if __name__ == "__main__":
-    cidade, uf = _solicitar_cidade_uf()
-    main(cidade, uf)
+    print(f"\n💡 Agora gere os agendamentos com:\n   python main.py agendamentos gerar")
