@@ -3,6 +3,41 @@ import time
 
 import requests
 
+NOMES_GENERICOS = [
+    "posto ipiranga", "posto shell", "posto br", "posto ale", "posto petrobras",
+    "posto texaco", "posto raízen",
+    "supermercados dia", "atacadão", "atacadao", "atacare", "assai", "carrefour",
+    "atacad", "prezunic", "guanabara", "super bom", "extra",
+    "mcdonald", "burger king", "subway", "bobs", "habib",
+    "kfc", "giraffa", "spoleto", "girafas",
+    "igreja universal", "assembleia de deus", "igreja mundial",
+    "congregação cristã", "testemunha de jeová", "congregacao crista",
+    "smart fit", "bluefit", "bodytech",
+    "drogasil", "drogaraia", "pague menos", "são joão",
+    "drogaria sp", "drogaria araujo", "extrafarma", "drogaria venancio",
+    "cacau show", "o boticário", "boticario", "quem disse berenice", "havanna",
+    "kopenhagen",
+    "caixa econômica", "banco do brasil", "bradesco", "itaú", "itau",
+    "santander", "banco safra",
+    "magazine luiza", "casas bahia", "americanas", "renner", "riachuelo",
+    "marisa", "ce&a", "cea", "pernambucanas",
+    "am/pm", "shell select", "br mania", "localiza",
+    "havaianas", "milwaukee", "lupo",
+]
+
+
+def _nome_generico(elemento):
+    tags = elemento.get("tags", {})
+    nome = (tags.get("name") or "").lower()
+    brand = (tags.get("brand") or "").lower()
+    if brand and len(brand) >= 3 and brand in nome:
+        return True
+    for padrao in NOMES_GENERICOS:
+        if padrao in nome:
+            return True
+    return False
+
+
 NOMINATIM_URL = "https://nominatim.openstreetmap.org"
 HEADERS = {"User-Agent": "MobilidadeAutomation/1.0 (projeto@mobilidade.local)"}
 
@@ -46,11 +81,16 @@ def buscar_bounding_box(cidade: str, uf: str) -> tuple:
     centro_lat = float(item["lat"])
     centro_lon = float(item["lon"])
 
+    largura_km = haversine(centro_lat, min_lon, centro_lat, max_lon)
+    altura_km = haversine(min_lat, centro_lon, max_lat, centro_lon)
+    diametro_km = (largura_km + altura_km) / 2
+
     print(f"📍 {item.get('display_name', query)}")
     print(f"   Centro: ({centro_lat}, {centro_lon})")
     print(f"   BBox: [{min_lat}, {max_lat}, {min_lon}, {max_lon}]")
+    print(f"   Diâmetro estimado: {diametro_km:.1f}km ({largura_km:.1f}×{altura_km:.1f})")
 
-    return (min_lat, max_lat, min_lon, max_lon, centro_lat, centro_lon)
+    return (min_lat, max_lat, min_lon, max_lon, centro_lat, centro_lon, diametro_km)
 
 
 OVERPASS_URL = "https://overpass-api.de/api/interpreter"
@@ -73,23 +113,26 @@ def _overpass_query(query: str) -> list:
 
 def buscar_c1(min_lat: float, max_lat: float, min_lon: float, max_lon: float,
               centro_lat: float, centro_lon: float, cidade: str, uf: str):
-    """Descobre C1: praça, supermercado ou shopping mais próximo do centro da cidade."""
+    """Descobre C1: POI nomeado e não-genérico mais próximo do centro da cidade."""
     from modelos.local_coleta import LocalColeta
 
     query = f"""
     [out:json];
     (
-      node[place=square]({min_lat},{min_lon},{max_lat},{max_lon});
-      node[shop=supermarket]({min_lat},{min_lon},{max_lat},{max_lon});
-      node[shop=mall]({min_lat},{min_lon},{max_lat},{max_lon});
+      node[amenity]({min_lat},{min_lon},{max_lat},{max_lon});
+      node[shop]({min_lat},{min_lon},{max_lat},{max_lon});
+      node[tourism]({min_lat},{min_lon},{max_lat},{max_lon});
+      node[historic]({min_lat},{min_lon},{max_lat},{max_lon});
+      node[leisure]({min_lat},{min_lon},{max_lat},{max_lon});
     );
     out center;
     """
 
     elementos = _overpass_query(query)
+    validos = [e for e in elementos if e.get("tags", {}).get("name") and not _nome_generico(e)]
 
-    if not elementos:
-        print("⚠️  Nenhum local encontrado — usando centro da cidade como C1")
+    if not validos:
+        print("⚠️  Nenhum local não-genérico encontrado — usando centro da cidade como C1")
         nome = f"Centro, {cidade}"
         return LocalColeta(
             codigo="C1", endereco=f"Centro, {cidade}, {uf}",
@@ -97,28 +140,47 @@ def buscar_c1(min_lat: float, max_lat: float, min_lon: float, max_lon: float,
         )
 
     mais_perto = min(
-        elementos,
+        validos,
         key=lambda e: haversine(centro_lat, centro_lon, e.get("lat", 0), e.get("lon", 0)),
     )
     lat = mais_perto.get("lat", centro_lat)
     lon = mais_perto.get("lon", centro_lon)
     nome = mais_perto.get("tags", {}).get("name", f"Centro, {cidade}")
     rua = _obter_rua(lat, lon)
-    print(f"🏙️  C1: {nome} ({lat}, {lon}) — {len(elementos)} locais analisados")
+    genericos_filtrados = len(elementos) - len(validos)
+    total = len(elementos)
+    print(f"🏙️  C1: {nome} ({lat}, {lon}) — {genericos_filtrados} genéricos filtrados de {total} POIs")
     return LocalColeta(codigo="C1", endereco=f"{nome}, {rua}, {cidade}, {uf}", cidade=cidade, uf=uf, lat=lat, lon=lon, tipo="central")
 
 
 def buscar_c2(min_lat: float, max_lat: float, min_lon: float, max_lon: float,
               centro_lat: float, centro_lon: float, c1_lat: float, c1_lon: float,
-              cidade: str, uf: str):
-    """Descobre C2: ponto turístico ou histórico, a >100m de C1."""
+              cidade: str, uf: str, diametro_km: float):
+    """Descobre C2: POI não-genérico com separação mínima de C1."""
     from modelos.local_coleta import LocalColeta
 
-    def _selecionar(elementos):
+    min_dist = max(diametro_km * 0.15, 1.0)
+    print(f"   🔍 Buscando C2 a ≥{min_dist:.1f}km de C1...")
+
+    query = f"""
+    [out:json];
+    (
+      node[amenity]({min_lat},{min_lon},{max_lat},{max_lon});
+      node[shop]({min_lat},{min_lon},{max_lat},{max_lon});
+      node[tourism]({min_lat},{min_lon},{max_lat},{max_lon});
+      node[historic]({min_lat},{min_lon},{max_lat},{max_lon});
+      node[leisure]({min_lat},{min_lon},{max_lat},{max_lon});
+    );
+    out center;
+    """
+    elementos = _overpass_query(query)
+
+    def _selecionar(min_dist):
         candidatos = [
             e for e in elementos
             if e.get("tags", {}).get("name")
-            and haversine(c1_lat, c1_lon, e.get("lat", 0), e.get("lon", 0)) > 0.1
+            and not _nome_generico(e)
+            and haversine(c1_lat, c1_lon, e.get("lat", 0), e.get("lon", 0)) >= min_dist
         ]
         if not candidatos:
             return None
@@ -127,30 +189,15 @@ def buscar_c2(min_lat: float, max_lat: float, min_lon: float, max_lon: float,
             key=lambda e: haversine(centro_lat, centro_lon, e.get("lat", 0), e.get("lon", 0)),
         )
 
-    # Primeira tentativa: tourism + historic
-    query = f"""
-    [out:json];
-    (
-      node[tourism]({min_lat},{min_lon},{max_lat},{max_lon});
-      node[historic]({min_lat},{min_lon},{max_lat},{max_lon});
-    );
-    out center;
-    """
-    elementos = _overpass_query(query)
-    selecionado = _selecionar(elementos)
+    selecionado = _selecionar(min_dist)
 
     if selecionado is None:
-        print("⚠️  Nenhum tourism/historic adequado — tentando amenidades genéricas")
-        query_fallback = f"""
-        [out:json];
-        node[amenity]({min_lat},{min_lon},{max_lat},{max_lon});
-        out center;
-        """
-        elementos = _overpass_query(query_fallback)
-        selecionado = _selecionar(elementos)
+        min_dist_fallback = max(diametro_km * 0.05, 0.3)
+        print(f"   ⚠️  Nenhum POI não-genérico a ≥{min_dist:.1f}km — relaxando para ≥{min_dist_fallback:.1f}km")
+        selecionado = _selecionar(min_dist_fallback)
 
     if selecionado is None:
-        raise ValueError(f"Nenhum POI adequado encontrado para C2 em {cidade}/{uf}")
+        raise ValueError(f"Nenhum POI não-genérico adequado para C2 em {cidade}/{uf}")
 
     lat = selecionado.get("lat", centro_lat)
     lon = selecionado.get("lon", centro_lon)
@@ -203,7 +250,8 @@ def _reverse_geocode(lat: float, lon: float, cidade: str) -> str:
 
 
 def buscar_extremos(min_lat: float, max_lat: float, min_lon: float, max_lon: float,
-                    centro_lat: float, centro_lon: float, cidade: str, uf: str):
+                    centro_lat: float, centro_lon: float, cidade: str, uf: str,
+                    diametro_km: float):
     """Descobre E1 e E2: extremos opostos dentro do perímetro urbano."""
     from modelos.local_coleta import LocalColeta
 
@@ -212,6 +260,9 @@ def buscar_extremos(min_lat: float, max_lat: float, min_lon: float, max_lon: flo
     (
       node[amenity]({min_lat},{min_lon},{max_lat},{max_lon});
       node[shop]({min_lat},{min_lon},{max_lat},{max_lon});
+      node[tourism]({min_lat},{min_lon},{max_lat},{max_lon});
+      node[historic]({min_lat},{min_lon},{max_lat},{max_lon});
+      node[leisure]({min_lat},{min_lon},{max_lat},{max_lon});
     );
     out center;
     """
@@ -219,19 +270,19 @@ def buscar_extremos(min_lat: float, max_lat: float, min_lon: float, max_lon: flo
 
     pois_todos = [
         e for e in elementos
-        if e.get("tags", {}).get("name")
+        if e.get("tags", {}).get("name") and not _nome_generico(e)
     ]
 
-    # Raio urbano adaptativo: começa em 3km, dobra até ter ≥ 4 POIs
-    raio_km = 3.0
+    # Raio urbano adaptativo: começa proporcional ao diâmetro, cresce até ter ≥6 POIs
+    raio_km = max(diametro_km * 0.45, 3.0)
     while True:
         pois = [
             e for e in pois_todos
             if haversine(centro_lat, centro_lon, e.get("lat", 0), e.get("lon", 0)) <= raio_km
         ]
-        if len(pois) >= 4 or raio_km >= 30:
+        if len(pois) >= 6 or raio_km >= max(diametro_km * 0.8, 30):
             break
-        raio_km *= 2
+        raio_km *= 1.5
 
     print(f"🎯 {len(pois)} POIs em raio urbano de {raio_km:.0f}km (total: {len(pois_todos)})")
 
@@ -273,30 +324,64 @@ def buscar_extremos(min_lat: float, max_lat: float, min_lon: float, max_lon: flo
 
     e1_dist = haversine(centro_lat, centro_lon, e1_lat, e1_lon)
     e2_dist = haversine(centro_lat, centro_lon, e2_lat, e2_lon)
+    genericos_filtrados = len(elementos) - len(pois_todos)
     print(f"🏪 E1: {nome_e1} ({e1_lat}, {e1_lon}) — {e1_dist:.1f}km do centro")
-    print(f"🏪 E2: {nome_e2} ({e2_lat}, {e2_lon}) — {e2_dist:.1f}km do centro")
+    print(f"🏪 E2: {nome_e2} ({e2_lat}, {e2_lon}) — {e2_dist:.1f}km do centro | {genericos_filtrados} genéricos filtrados")
 
-    e1_local = LocalColeta(codigo="E1", endereco=f"{nome_e1}, {cidade}, {uf}", cidade=cidade, uf=uf, lat=e1_lat, lon=e1_lon, tipo="extremo")
-    e2_local = LocalColeta(codigo="E2", endereco=f"{nome_e2}, {cidade}, {uf}", cidade=cidade, uf=uf, lat=e2_lat, lon=e2_lon, tipo="extremo")
+    rua_e1 = _obter_rua(e1_lat, e1_lon)
+    rua_e2 = _obter_rua(e2_lat, e2_lon)
+    e1_local = LocalColeta(codigo="E1", endereco=f"{nome_e1}, {rua_e1}, {cidade}, {uf}", cidade=cidade, uf=uf, lat=e1_lat, lon=e1_lon, tipo="extremo")
+    e2_local = LocalColeta(codigo="E2", endereco=f"{nome_e2}, {rua_e2}, {cidade}, {uf}", cidade=cidade, uf=uf, lat=e2_lat, lon=e2_lon, tipo="extremo")
     return e1_local, e2_local
 
 
-def buscar_bairros(c1, c2, e1, e2, cidade: str, uf: str):
-    """Descobre M1 e M2: pontos médios entre extremos e centros."""
+def buscar_bairros(c1, c2, e1, e2, cidade: str, uf: str, diametro_km: float):
+    """Descobre M1 e M2: pontos médios entre extremos e centros, ancorados em POIs reais."""
     from modelos.local_coleta import LocalColeta
 
-    m1_lat = round((e1.lat + c1.lat) / 2, 7)
-    m1_lon = round((e1.lon + c1.lon) / 2, 7)
-    nome_m1 = _reverse_geocode(m1_lat, m1_lon, cidade)
-    print(f"🏘️  M1: {nome_m1} ({m1_lat}, {m1_lon}) — midpoint(E1, C1)")
+    def _warp_para_poi(lat_base, lon_base, raio_m=800):
+        """Busca um POI não-genérico próximo ao ponto base; se não achar, retorna o ponto base."""
+        query = f"""
+        [out:json];
+        (
+          node(around:{raio_m},{lat_base},{lon_base})[amenity];
+          node(around:{raio_m},{lat_base},{lon_base})[shop];
+          node(around:{raio_m},{lat_base},{lon_base})[tourism];
+          node(around:{raio_m},{lat_base},{lon_base})[leisure];
+        );
+        out center;
+        """
+        elementos = _overpass_query(query)
+        nomes = [e for e in elementos
+                 if e.get("tags", {}).get("name") and not _nome_generico(e)]
+        if nomes:
+            mais_perto = min(nomes, key=lambda e: haversine(
+                lat_base, lon_base, e.get("lat", 0), e.get("lon", 0)))
+            return (mais_perto.get("lat", lat_base),
+                    mais_perto.get("lon", lon_base),
+                    mais_perto.get("tags", {}).get("name"))
+        return (lat_base, lon_base, None)
 
-    m2_lat = round((e2.lat + c2.lat) / 2, 7)
-    m2_lon = round((e2.lon + c2.lon) / 2, 7)
-    nome_m2 = _reverse_geocode(m2_lat, m2_lon, cidade)
-    print(f"🏘️  M2: {nome_m2} ({m2_lat}, {m2_lon}) — midpoint(E2, C2)")
+    m1_lat, m1_lon, nome_poi = _warp_para_poi((e1.lat + c1.lat) / 2, (e1.lon + c1.lon) / 2)
+    if nome_poi:
+        nome_m1 = nome_poi
+        print(f"🏘️  M1: {nome_m1} ({m1_lat}, {m1_lon}) — POI entre E1 e C1")
+    else:
+        nome_m1 = _reverse_geocode(m1_lat, m1_lon, cidade)
+        print(f"🏘️  M1: {nome_m1} ({m1_lat}, {m1_lon}) — midpoint(E1, C1)")
 
-    m1 = LocalColeta(codigo="M1", endereco=f"{nome_m1}, {cidade}, {uf}", cidade=cidade, uf=uf, lat=m1_lat, lon=m1_lon, tipo="bairro")
-    m2 = LocalColeta(codigo="M2", endereco=f"{nome_m2}, {cidade}, {uf}", cidade=cidade, uf=uf, lat=m2_lat, lon=m2_lon, tipo="bairro")
+    m2_lat, m2_lon, nome_poi = _warp_para_poi((e2.lat + c2.lat) / 2, (e2.lon + c2.lon) / 2)
+    if nome_poi:
+        nome_m2 = nome_poi
+        print(f"🏘️  M2: {nome_m2} ({m2_lat}, {m2_lon}) — POI entre E2 e C2")
+    else:
+        nome_m2 = _reverse_geocode(m2_lat, m2_lon, cidade)
+        print(f"🏘️  M2: {nome_m2} ({m2_lat}, {m2_lon}) — midpoint(E2, C2)")
+
+    rua_m1 = _obter_rua(m1_lat, m1_lon)
+    rua_m2 = _obter_rua(m2_lat, m2_lon)
+    m1 = LocalColeta(codigo="M1", endereco=f"{nome_m1}, {rua_m1}, {cidade}, {uf}", cidade=cidade, uf=uf, lat=m1_lat, lon=m1_lon, tipo="bairro")
+    m2 = LocalColeta(codigo="M2", endereco=f"{nome_m2}, {rua_m2}, {cidade}, {uf}", cidade=cidade, uf=uf, lat=m2_lat, lon=m2_lon, tipo="bairro")
     return m1, m2
 
 
@@ -344,7 +429,7 @@ def main(cidade: str, uf: str):
             print(f"📌 {codigo} já cadastrado: {cache[codigo].endereco} ({cache[codigo].lat}, {cache[codigo].lon})")
 
     bbox = buscar_bounding_box(cidade, uf)
-    min_lat, max_lat, min_lon, max_lon, centro_lat, centro_lon = bbox
+    min_lat, max_lat, min_lon, max_lon, centro_lat, centro_lon, diametro_km = bbox
 
     # C1
     c1 = cache.get("C1")
@@ -355,14 +440,14 @@ def main(cidade: str, uf: str):
     # C2
     c2 = cache.get("C2")
     if not c2:
-        c2 = buscar_c2(min_lat, max_lat, min_lon, max_lon, centro_lat, centro_lon, c1.lat, c1.lon, cidade, uf)
+        c2 = buscar_c2(min_lat, max_lat, min_lon, max_lon, centro_lat, centro_lon, c1.lat, c1.lon, cidade, uf, diametro_km)
 
     # E1, E2
     e1 = cache.get("E1")
     e2 = cache.get("E2")
     if not e1 or not e2:
         time.sleep(3)  # Rate limit Overpass
-        e1_novo, e2_novo = buscar_extremos(min_lat, max_lat, min_lon, max_lon, centro_lat, centro_lon, cidade, uf)
+        e1_novo, e2_novo = buscar_extremos(min_lat, max_lat, min_lon, max_lon, centro_lat, centro_lon, cidade, uf, diametro_km)
         if not e1:
             e1 = e1_novo
         if not e2:
@@ -372,7 +457,7 @@ def main(cidade: str, uf: str):
     m1 = cache.get("M1")
     m2 = cache.get("M2")
     if not m1 or not m2:
-        m1_novo, m2_novo = buscar_bairros(c1, c2, e1, e2, cidade, uf)
+        m1_novo, m2_novo = buscar_bairros(c1, c2, e1, e2, cidade, uf, diametro_km)
         if not m1:
             m1 = m1_novo
         if not m2:

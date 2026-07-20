@@ -51,7 +51,7 @@ def gerar_modo_teste(locais, agora):
     proximo = agora + timedelta(minutes=1)
 
     for origem_rota, destino_rota in rotas:
-        limite = random.randint(3, 10)
+        limite = random.randint(3, 9)
         duracao = timedelta(seconds=(limite - 1) * INTERVALO_SEGUNDOS)
 
         # Manhã
@@ -112,7 +112,7 @@ def gerar_modo_programado(locais, agora):
     idx_manha = 0
     idx_tarde = 0
     dia_atual = data_ref.date()
-    limite_padrao = True  # True = usa random(3,10); False = usa limite=3
+    limite_padrao = True
 
     while idx_manha < 9 or idx_tarde < 9:
         inicio_manha = datetime(dia_atual.year, dia_atual.month, dia_atual.day, 6, 0)
@@ -129,7 +129,7 @@ def gerar_modo_programado(locais, agora):
 
             while idx_manha < 9:
                 origem_rota, destino_rota = rotas[idx_manha]
-                limite = 3 if not limite_padrao else random.randint(3, 10)
+                limite = 3 if not limite_padrao else random.randint(3, 9)
                 duracao = timedelta(seconds=(limite - 1) * INTERVALO_SEGUNDOS)
 
                 horario = ultimo_fim_manha + timedelta(minutes=BUFFER_MINUTOS)
@@ -159,7 +159,7 @@ def gerar_modo_programado(locais, agora):
 
             while idx_tarde < 9:
                 origem_rota, destino_rota = rotas[idx_tarde]
-                limite = 3 if not limite_padrao else random.randint(3, 10)
+                limite = 3 if not limite_padrao else random.randint(3, 9)
                 duracao = timedelta(seconds=(limite - 1) * INTERVALO_SEGUNDOS)
 
                 horario = ultimo_fim_tarde + timedelta(minutes=BUFFER_MINUTOS)
