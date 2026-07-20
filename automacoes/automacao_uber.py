@@ -1,3 +1,5 @@
+import logging
+import os
 import re
 import time
 import xml.etree.ElementTree as ET
@@ -13,18 +15,10 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 from automacoes.base import BaseAutomacao
+from debug_coleta import obter as obter_debug
 from modelos.corrida import Corrida, MetricasCorrida
 
 logger = structlog.get_logger("automacao.uber")
-
-# Handler unico para metricas_debug.log, configurado no modulo
-import logging
-_metricas_handler = logging.FileHandler("metricas_debug.log", encoding="utf-8")
-_metricas_handler.setFormatter(logging.Formatter("%(asctime)s - %(message)s"))
-_metricas_logger = logging.getLogger("metricas.debug")
-_metricas_logger.setLevel(logging.DEBUG)
-_metricas_logger.addHandler(_metricas_handler)
-_metricas_logger.propagate = False
 
 
 class AutomacaoUber(BaseAutomacao):
@@ -77,6 +71,8 @@ class AutomacaoUber(BaseAutomacao):
 
         if origem:
             origem = self._preencher_campo(origem, container_origem)
+
+        time.sleep(0.5)
 
         destino = self._preencher_campo(destino, container_destino)
 
@@ -172,8 +168,11 @@ class AutomacaoUber(BaseAutomacao):
         assert self.driver is not None
         assert self.wait is not None
 
+        log = obter_debug()
+
         def _log(msg):
-            _metricas_logger.debug(msg)
+            if log:
+                log.debug(msg)
 
         _log("=== INICIO coletar_metricas ===")
         t_total = time.time()
@@ -507,24 +506,33 @@ class AutomacaoUber(BaseAutomacao):
         assert self.driver is not None
         assert self.wait is not None
 
-        logger.debug("Preenchendo campo", container_id=container_id, endereco=endereco)
+        log = obter_debug()
+        if log:
+            log.debug("Preenchendo campo  container_id=%s  endereco=%s", container_id, endereco)
 
         container = self.wait.until(
             EC.element_to_be_clickable((By.ID, container_id))
         )
+        if log:
+            log.debug("Clicando container  container_id=%s", container_id)
         container.click()
 
         campo_texto = self.wait.until(
             EC.presence_of_element_located((By.ID, "com.ubercab:id/edit_text"))
         )
+        if log:
+            log.debug("edit_text encontrado, enviando endereco")
         time.sleep(0.3)
         campo_texto.clear()
         campo_texto.send_keys(endereco)
 
-        logger.debug("Aguardando resultados da busca")
+        if log:
+            log.debug("Aguardando ub__text_search_v2_results")
         container_resultados = self.wait.until(
             EC.presence_of_element_located((By.ID, "com.ubercab:id/ub__text_search_v2_results"))
         )
+        if log:
+            log.debug("ub__text_search_v2_results encontrado, clicando primeiro resultado")
 
         selecionado = endereco
         for tentativa in range(3):
@@ -533,11 +541,13 @@ class AutomacaoUber(BaseAutomacao):
                     By.XPATH, ".//android.widget.Button[@content-desc]"
                 )
                 selecionado = primeiro_resultado.get_attribute("content-desc") or endereco
-                logger.debug("Clicando resultado", selecionado=selecionado[:60])
+                if log:
+                    log.debug("Clicando resultado  selecionado=%s", selecionado[:60])
                 primeiro_resultado.click()
                 break
             except Exception as e:
-                logger.debug("Falha ao selecionar resultado", tentativa=tentativa+1, erro=str(e)[:80])
+                if log:
+                    log.debug("Falha ao selecionar resultado  tentativa=%d  erro=%s", tentativa + 1, str(e)[:80])
                 time.sleep(0.5)
 
         return selecionado
@@ -615,6 +625,7 @@ class AutomacaoUber(BaseAutomacao):
     def _extrair_detalhamento_preco(self) -> dict:
         assert self.driver is not None
 
+        log = obter_debug()
         campos = {}
 
         try:
@@ -623,7 +634,8 @@ class AutomacaoUber(BaseAutomacao):
                 "//*[@resource-id='com.ubercab:id/line_items_container']"
                 "/android.view.ViewGroup",
             )
-            _metricas_logger.debug(f"  _extrair: {len(grupos)} grupos encontrados em line_items_container")
+            if log:
+                log.debug("  _extrair: %d grupos encontrados em line_items_container", len(grupos))
             for grupo in grupos:
                 try:
                     title_elem = grupo.find_element(
@@ -644,7 +656,8 @@ class AutomacaoUber(BaseAutomacao):
                     )
                     valor = float(value_text)
 
-                    _metricas_logger.debug(f"  _extrair: campo='{title}' valor={valor}")
+                    if log:
+                        log.debug("  _extrair: campo='%s' valor=%s", title, valor)
 
                     title_lower = title.lower()
                     if "preço base" in title_lower or "preco base" in title_lower:
@@ -664,10 +677,12 @@ class AutomacaoUber(BaseAutomacao):
                     elif "custo fixo" in title_lower:
                         campos["custo_fixo"] = valor
                 except Exception as e:
-                    _metricas_logger.debug(f"  _extrair: erro parse grupo: {e}")
+                    if log:
+                        log.debug("  _extrair: erro parse grupo: %s", e)
                     continue
         except Exception as e:
-            _metricas_logger.debug(f"  _extrair: line_items_container nao encontrado: {e}")
+            if log:
+                log.debug("  _extrair: line_items_container nao encontrado: %s", e)
 
         return campos
 

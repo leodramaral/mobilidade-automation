@@ -108,4 +108,4 @@ Navegação com 2x `driver.back()`:
 
 ## Arquivo de debug
 
-Ao executar, é gerado `metricas_debug.log` no diretório raiz com timestamps de cada operação para diagnóstico.
+Ao executar, é gerado um arquivo em `debugs/<timestamp>.log` no diretório raiz com timestamps de cada operação para diagnóstico. Um novo arquivo é criado a cada coleta.

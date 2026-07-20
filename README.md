@@ -74,7 +74,6 @@ Edite o arquivo `config.json` que esta na mesma pasta do `.exe`:
   "app": "99",
   "destino": "Seu destino aqui",
   "limite_consultas": 2,
-  "intervalo_segundos": 20,
   "appium": {
     "server": "http://127.0.0.1:4723",
     "device": "MotoG86",
@@ -90,7 +89,6 @@ Edite o arquivo `config.json` que esta na mesma pasta do `.exe`:
 Ajuste:
 - `destino`: endereco ou local de destino para a busca
 - `limite_consultas`: numero de coletas a realizar
-- `intervalo_segundos`: tempo entre cada coleta
 - `device`: nome do dispositivo (use `adb devices` para verificar)
 - `app_package`: pacote do app 99 (`com.taxis99`)
 

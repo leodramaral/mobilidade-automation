@@ -1,10 +1,11 @@
+import fcntl
 import os
-import time
-from typing import Optional
+from datetime import datetime
 
 import structlog
 from automacoes.automacao_99 import Automacao99
 from automacoes.automacao_uber import AutomacaoUber
+from debug_coleta import iniciar as iniciar_debug, finalizar as finalizar_debug
 from persistencia.repositorio_banco import RepositorioBanco
 from servicos.clima import ClimaServico
 
@@ -37,7 +38,14 @@ class Coletor:
         self._parar = True
 
     def executar(self):
+        lock_file = open("/tmp/coleta.lock", "w")
+        lock_file.write(f"pid={os.getpid()} ts={datetime.now().isoformat()}\n")
+        lock_file.flush()
+        fcntl.flock(lock_file.fileno(), fcntl.LOCK_EX)
+        logger.info("Lock adquirido para coleta")
+
         apps_ativos = listar_apps_ativos(self.config)
+        iniciar_debug()
         repositorio = criar_repositorio(self.config)
         repositorio.inicializar()
 
@@ -134,11 +142,6 @@ class Coletor:
                     resumo_parts.append(f"{app}={qtd}preco(s)")
                 resumo = "  ".join(resumo_parts)
                 logger.info("Rodada concluída", rodada=rodada, resumo=resumo)
-
-                if rodada < self.config['limite_consultas'] and not self._parar:
-                    intervalo = self.config['intervalo_segundos']
-                    logger.info("Aguardando próxima rodada", segundos=intervalo)
-                    time.sleep(intervalo)
         except Exception as e:
             logger.error(
                 "Erro geral na coleta",
@@ -147,6 +150,9 @@ class Coletor:
                 exc_info=True
             )
         finally:
+            finalizar_debug()
+            fcntl.flock(lock_file.fileno(), fcntl.LOCK_UN)
+            lock_file.close()
             if hasattr(repositorio, 'fechar'):
                 repositorio.fechar()
             logger.info("Coleta finalizada")

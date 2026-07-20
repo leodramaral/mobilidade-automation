@@ -12,7 +12,7 @@ from logging_config import configurar_logging
 
 CAMINHO_CONFIG = Path(__file__).resolve().parent / "config.json"
 CAMINHO_EXEMPLO = Path(__file__).resolve().parent / "config.json.example"
-CAMPOS_OBRIGATORIOS = ["appium", "persistencia", "limite_consultas", "intervalo_segundos"]
+CAMPOS_OBRIGATORIOS = ["appium", "persistencia", "limite_consultas"]
 
 logger = structlog.get_logger("main")
 

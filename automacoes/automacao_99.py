@@ -13,6 +13,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 from automacoes.base import BaseAutomacao
+from debug_coleta import obter as obter_debug
 from modelos.corrida import Corrida
 
 logger = structlog.get_logger("automacao.99")
@@ -34,6 +35,10 @@ class Automacao99(BaseAutomacao):
         options.no_reset = True
         options.set_capability('appWaitForLaunch', False)
 
+        log = obter_debug()
+        if log:
+            log.debug("=== INICIO conectar 99 ===")
+
         logger.info("Conectando ao Appium Server")
         self.driver = webdriver.Remote(self.server, options=options)
         self.device_model = self.driver.capabilities.get('deviceModel', 'desconhecido')
@@ -52,9 +57,16 @@ class Automacao99(BaseAutomacao):
                 EC.presence_of_element_located((By.ID, "com.taxis99:id/oc_home_where_to_tv"))
             )
 
+        if log:
+            log.debug("=== FIM conectar 99 ===")
+
     def coletar_precos(self, destino: str, origem: str = "") -> List[Corrida]:
         assert self.driver is not None
         assert self.wait is not None
+
+        log = obter_debug()
+        if log:
+            log.debug("=== INICIO coletar_precos 99 ===  origem=%s  destino=%s", origem, destino)
 
         botao = self.wait.until(
             EC.element_to_be_clickable((By.ID, "com.taxis99:id/oc_home_where_to_tv"))
@@ -188,9 +200,16 @@ class Automacao99(BaseAutomacao):
                 logger.debug("Erro parse container", exc_info=True)
                 continue
 
+        if log:
+            precos = [(r.categoria, r.preco) for r in resultados]
+            log.debug("=== FIM coletar_precos 99 ===  quantidade=%d  precos=%s", len(resultados), precos)
+
         return resultados
 
     def coletar_metricas(self, corridas: List[Corrida]) -> List[Corrida]:
+        log = obter_debug()
+        if log:
+            log.debug("coletar_metricas 99: sem metricas detalhadas para este app")
         return corridas
 
     def _fechar_dialog_amigo(self) -> None:

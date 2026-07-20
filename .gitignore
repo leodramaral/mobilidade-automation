@@ -30,4 +30,4 @@ build_venv/
 dist/
 build/
 
-metricas_debug.log
+debugs/
