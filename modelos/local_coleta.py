@@ -10,3 +10,7 @@ class LocalColeta:
     lat: float
     lon: float
     tipo: str  # 'central', 'extremo', 'bairro'
+
+    def __post_init__(self):
+        self.lat = round(self.lat, 7)
+        self.lon = round(self.lon, 7)

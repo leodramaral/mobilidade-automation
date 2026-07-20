@@ -41,8 +41,8 @@ def _gerar_rotas(locais):
     ]
 
 
-def gerar_modo_teste(locais, agora):
-    """Gera 18 agendamentos sequenciais a partir de agora."""
+def gerar_modo_sequencial(locais, agora):
+    """Gera 18 agendamentos sequenciais a partir de agora, 1 min de intervalo."""
     C1 = next(l for l in locais if l.codigo == "C1")
     C2 = next(l for l in locais if l.codigo == "C2")
     rotas = _gerar_rotas(locais)
@@ -51,34 +51,29 @@ def gerar_modo_teste(locais, agora):
     proximo = agora + timedelta(minutes=1)
 
     for origem_rota, destino_rota in rotas:
-        limite = random.randint(3, 9)
-        duracao = timedelta(seconds=(limite - 1) * INTERVALO_SEGUNDOS)
-
-        # Manhã
         origem, destino = _direcao("manhã", origem_rota, destino_rota, C1, C2)
         agendamentos.append({
             "quando": proximo.strftime("%Y-%m-%d %H:%M"),
             "config_override": {
                 "origem": origem.endereco,
                 "destino": destino.endereco,
-                "limite_consultas": limite,
+                "limite_consultas": 1,
                 "openweather": {"lat": origem.lat, "lon": origem.lon},
             },
         })
-        proximo += duracao + timedelta(minutes=BUFFER_MINUTOS)
+        proximo += timedelta(minutes=1)
 
-        # Tarde
         origem, destino = _direcao("tarde", origem_rota, destino_rota, C1, C2)
         agendamentos.append({
             "quando": proximo.strftime("%Y-%m-%d %H:%M"),
             "config_override": {
                 "origem": origem.endereco,
                 "destino": destino.endereco,
-                "limite_consultas": limite,
+                "limite_consultas": 1,
                 "openweather": {"lat": origem.lat, "lon": origem.lon},
             },
         })
-        proximo += duracao + timedelta(minutes=BUFFER_MINUTOS)
+        proximo += timedelta(minutes=1)
 
     return agendamentos
 
@@ -237,12 +232,12 @@ def _escolher_cidade(cidades):
 def _escolher_modo():
     """Pede o modo de geração ao usuário."""
     print("\nModo de geração:")
-    print("   1. teste       — sequencial imediato a partir de agora")
+    print("   1. sequencial  — 1 min entre coletas, a partir de agora")
     print("   2. programado  — horários de pico (06:00-08:50 / 17:00-18:50)")
     while True:
         escolha = input("Escolha o modo (1 ou 2): ").strip()
         if escolha == "1":
-            return "teste"
+            return "sequencial"
         if escolha == "2":
             return "programado"
         print("⚠️  Digite 1 ou 2.")
@@ -274,9 +269,9 @@ def main():
 
     agora = datetime.now().replace(second=0, microsecond=0)
 
-    if modo == "teste":
-        print(f"\n🧪 Modo TESTE — gerando agendamentos sequenciais a partir de {agora.strftime('%H:%M')}")
-        agendamentos = gerar_modo_teste(locais, agora)
+    if modo == "sequencial":
+        print(f"\n▶️  Modo SEQUENCIAL — 1 min entre coletas, a partir de {agora.strftime('%H:%M')}")
+        agendamentos = gerar_modo_sequencial(locais, agora)
     else:
         print(f"\n📅 Modo PROGRAMADO — gerando agendamentos em horários de pico")
         agendamentos = gerar_modo_programado(locais, agora)

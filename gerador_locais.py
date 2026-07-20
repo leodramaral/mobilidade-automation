@@ -251,9 +251,14 @@ def _reverse_geocode(lat: float, lon: float, cidade: str) -> str:
 
 def buscar_extremos(min_lat: float, max_lat: float, min_lon: float, max_lon: float,
                     centro_lat: float, centro_lon: float, cidade: str, uf: str,
-                    diametro_km: float):
-    """Descobre E1 e E2: extremos opostos dentro do perímetro urbano."""
+                    diametro_km: float, usadas: set = None):
+    """Descobre E1 e E2: extremos opostos dentro do perímetro urbano.
+
+    usadas: set de tuplas (lat, lon) arredondadas a 7 casas que não podem ser reutilizadas.
+    """
     from modelos.local_coleta import LocalColeta
+
+    usadas = usadas or set()
 
     query = f"""
     [out:json];
@@ -270,7 +275,9 @@ def buscar_extremos(min_lat: float, max_lat: float, min_lon: float, max_lon: flo
 
     pois_todos = [
         e for e in elementos
-        if e.get("tags", {}).get("name") and not _nome_generico(e)
+        if e.get("tags", {}).get("name")
+        and not _nome_generico(e)
+        and (round(e.get("lat", 0), 7), round(e.get("lon", 0), 7)) not in usadas
     ]
 
     # Raio urbano adaptativo: começa proporcional ao diâmetro, cresce até ter ≥6 POIs
@@ -335,12 +342,19 @@ def buscar_extremos(min_lat: float, max_lat: float, min_lon: float, max_lon: flo
     return e1_local, e2_local
 
 
-def buscar_bairros(c1, c2, e1, e2, cidade: str, uf: str, diametro_km: float):
-    """Descobre M1 e M2: pontos médios entre extremos e centros, ancorados em POIs reais."""
+def buscar_bairros(c1, c2, e1, e2, cidade: str, uf: str, diametro_km: float,
+                   usadas: set = None):
+    """Descobre M1 e M2: pontos médios entre extremos e centros, ancorados em POIs reais.
+
+    usadas: set de tuplas (lat, lon) arredondadas a 7 casas que não podem ser reutilizadas.
+    """
     from modelos.local_coleta import LocalColeta
 
+    usadas = usadas or set()
+
     def _warp_para_poi(lat_base, lon_base, raio_m=800):
-        """Busca um POI não-genérico próximo ao ponto base; se não achar, retorna o ponto base."""
+        """Busca um POI não-genérico próximo ao ponto base, excluindo os já usados;
+        se não achar, retorna o ponto base."""
         query = f"""
         [out:json];
         (
@@ -353,7 +367,9 @@ def buscar_bairros(c1, c2, e1, e2, cidade: str, uf: str, diametro_km: float):
         """
         elementos = _overpass_query(query)
         nomes = [e for e in elementos
-                 if e.get("tags", {}).get("name") and not _nome_generico(e)]
+                 if e.get("tags", {}).get("name")
+                 and not _nome_generico(e)
+                 and (round(e.get("lat", 0), 7), round(e.get("lon", 0), 7)) not in usadas]
         if nomes:
             mais_perto = min(nomes, key=lambda e: haversine(
                 lat_base, lon_base, e.get("lat", 0), e.get("lon", 0)))
@@ -442,28 +458,48 @@ def main(cidade: str, uf: str):
     if not c2:
         c2 = buscar_c2(min_lat, max_lat, min_lon, max_lon, centro_lat, centro_lon, c1.lat, c1.lon, cidade, uf, diametro_km)
 
+    usadas = {(c1.lat, c1.lon), (c2.lat, c2.lon)}
+
     # E1, E2
     e1 = cache.get("E1")
     e2 = cache.get("E2")
     if not e1 or not e2:
         time.sleep(3)  # Rate limit Overpass
-        e1_novo, e2_novo = buscar_extremos(min_lat, max_lat, min_lon, max_lon, centro_lat, centro_lon, cidade, uf, diametro_km)
+        e1_novo, e2_novo = buscar_extremos(min_lat, max_lat, min_lon, max_lon, centro_lat, centro_lon, cidade, uf, diametro_km, usadas)
         if not e1:
             e1 = e1_novo
         if not e2:
             e2 = e2_novo
 
+    usadas |= {(e1.lat, e1.lon), (e2.lat, e2.lon)}
+
     # M1, M2
     m1 = cache.get("M1")
     m2 = cache.get("M2")
     if not m1 or not m2:
-        m1_novo, m2_novo = buscar_bairros(c1, c2, e1, e2, cidade, uf, diametro_km)
+        m1_novo, m2_novo = buscar_bairros(c1, c2, e1, e2, cidade, uf, diametro_km, usadas)
         if not m1:
             m1 = m1_novo
         if not m2:
             m2 = m2_novo
 
     todos = [c1, c2, e1, e2, m1, m2]
+
+    coords_vistos = {}
+    dups = []
+    for l in todos:
+        key = (l.lat, l.lon)
+        if key in coords_vistos:
+            dups.append(f"  {l.codigo} e {coords_vistos[key].codigo} ({l.lat}, {l.lon})")
+        else:
+            coords_vistos[key] = l
+
+    if dups:
+        raise RuntimeError(
+            f"Pontos duplicados detectados para {cidade}/{uf}:\n" + "\n".join(dups)
+            + "\nExecute novamente com 'buscar novas' para gerar pontos diferentes."
+        )
+
     if len(cache) < 6:
         repo.salvar_locais(todos)
         print(f"💾 6 locais salvos no banco")
