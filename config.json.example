@@ -1,7 +1,4 @@
 {
-  "origem": "",
-  "destino": "",
-  "limite_consultas": 2,
   "appium": {
     "server": "http://127.0.0.1:4723",
     "99": {
@@ -18,10 +15,6 @@
   "persistencia": {
     "tipo": "banco",
     "caminho": "mobilidade.db"
-  },
-  "openweather": {
-    "lat": -23.5505,
-    "lon": -46.6333
   },
   "logging": {
     "level": "INFO"

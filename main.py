@@ -1,3 +1,4 @@
+import copy
 import json
 import os
 import sys
@@ -11,50 +12,96 @@ from logging_config import configurar_logging
 
 
 CAMINHO_CONFIG = Path(__file__).resolve().parent / "config.json"
-CAMINHO_EXEMPLO = Path(__file__).resolve().parent / "config.json.example"
-CAMPOS_OBRIGATORIOS = ["appium", "persistencia", "limite_consultas"]
+CAMINHO_AGENDAMENTOS = Path(__file__).resolve().parent / "agendamentos.json"
+CAMPOS_OBRIGATORIOS = ["appium", "persistencia"]
 
 logger = structlog.get_logger("main")
 
 
-def carregar_config():
-    load_dotenv()
-    if not CAMINHO_CONFIG.exists():
-        logger.critical("Arquivo config.json não encontrado", caminho=str(CAMINHO_CONFIG))
-        logger.info("Copie o exemplo: cp config.json.example config.json")
+def carregar_json(caminho: Path, nome: str) -> dict:
+    if not caminho.exists():
+        logger.critical("Arquivo %s nao encontrado", nome, caminho=str(caminho))
         sys.exit(1)
-
     try:
-        with open(CAMINHO_CONFIG, encoding="utf-8") as f:
-            config = json.load(f)
+        with open(caminho, encoding="utf-8") as f:
+            return json.load(f)
     except json.JSONDecodeError as e:
-        logger.critical("Erro ao ler config.json: JSON inválido", erro=str(e))
+        logger.critical("Erro ao ler %s: JSON invalido", nome, erro=str(e))
         sys.exit(1)
 
+
+def validar_config_base(config: dict) -> None:
     campos_faltando = [c for c in CAMPOS_OBRIGATORIOS if c not in config]
     if campos_faltando:
-        logger.critical("Campos obrigatórios faltando no config.json", campos=campos_faltando)
+        logger.critical("Campos obrigatorios faltando no config.json", campos=campos_faltando)
         sys.exit(1)
 
-    config_clima = config.get("openweather", {})
-    lat = config_clima.get("lat")
-    lon = config_clima.get("lon")
     api_key = os.environ.get("OPENWEATHER_API_KEY", "")
     if not api_key or api_key == "SUA_CHAVE_AQUI":
-        logger.warning("Chave da API OpenWeather não configurada. Defina OPENWEATHER_API_KEY no .env")
-    elif lat is None or lon is None:
-        logger.warning("Coordenadas (lat/lon) não configuradas no openweather. Coleta de clima será desabilitada.")
+        logger.warning("Chave da API OpenWeather nao configurada. Defina OPENWEATHER_API_KEY no .env")
 
+
+def e_sequencial(agendamento: dict) -> bool:
+    quando = agendamento.get("quando", "now")
+    return quando == "now"
+
+
+def merge_config(base: dict, override: dict) -> dict:
+    config = copy.deepcopy(base)
+    for k, v in override.items():
+        if isinstance(v, dict) and isinstance(config.get(k), dict):
+            config[k].update(v)
+        else:
+            config[k] = v
     return config
 
 
 def main():
-    config = carregar_config()
-    nivel_log = config.get("logging", {}).get("level", "INFO")
+    load_dotenv()
+
+    config_base = carregar_json(CAMINHO_CONFIG, "config.json")
+    validar_config_base(config_base)
+
+    agendamentos_data = carregar_json(CAMINHO_AGENDAMENTOS, "agendamentos.json")
+    agendamentos = agendamentos_data.get("agendamentos", [])
+
+    if not agendamentos:
+        logger.critical("Nenhum agendamento encontrado em agendamentos.json")
+        sys.exit(1)
+
+    sequenciais = [a for a in agendamentos if e_sequencial(a)]
+    programados = [a for a in agendamentos if not e_sequencial(a)]
+
+    nivel_log = config_base.get("logging", {}).get("level", "INFO")
     configurar_logging(nivel=nivel_log)
-    
-    coletor = Coletor(config)
-    coletor.executar()
+
+    logger.info(
+        "Agendamentos carregados",
+        sequenciais=len(sequenciais),
+        programados=len(programados),
+    )
+
+    for idx, agendamento in enumerate(sequenciais):
+        config = merge_config(config_base, agendamento.get("config_override", {}))
+        origem = agendamento.get("config_override", {}).get("origem", "?")
+        destino = agendamento.get("config_override", {}).get("destino", "?")
+        logger.info(
+            "Iniciando coleta sequencial",
+            indice=idx + 1,
+            total=len(sequenciais),
+            origem=origem,
+            destino=destino,
+        )
+        coletor = Coletor(config)
+        coletor.executar()
+
+    if programados:
+        logger.info(
+            "Agendamentos programados devem ser executados via run_agendador.py",
+            quantidade=len(programados),
+        )
+
+    logger.info("Todas as coletas sequenciais concluidas")
 
 
 if __name__ == "__main__":

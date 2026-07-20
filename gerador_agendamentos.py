@@ -1,21 +1,31 @@
 import json
-import random
 import sys
 from datetime import datetime, timedelta
 
 from persistencia.repositorio_banco import RepositorioBanco
 
 
-INTERVALO_SEGUNDOS = 60
-BUFFER_MINUTOS = 5
+PRESETS_PROGRAMADOS = {
+    "pico": {
+        "descricao": "horarios de pico — 08:00 centro / 16:30 bairro",
+        "momentos": [
+            ("08:00", "centro"),
+            ("16:30", "bairro"),
+        ],
+    },
+}
 
 
-def _direcao(periodo: str, origem, destino, C1, C2):
-    """Determina origem/destino conforme período e tipo da rota."""
+def _direcao(sentido: str, origem, destino, C1, C2):
+    """Determina origem/destino conforme o sentido do trajeto.
+
+    sentido 'centro': saidas dos E e M rumo aos C (E/M -> C)
+    sentido 'bairro': saidas dos C rumo aos E e M (C -> E/M)
+    """
     pois = {C1.codigo, C2.codigo}
     if origem.codigo in pois and destino.codigo in pois:
-        return (C1, C2) if periodo == "manhã" else (C2, C1)
-    if periodo == "manhã":
+        return (C1, C2) if sentido == "centro" else (C2, C1)
+    if sentido == "centro":
         return (origem, destino)
     else:
         return (destino, origem)
@@ -41,163 +51,52 @@ def _gerar_rotas(locais):
     ]
 
 
-def gerar_modo_sequencial(locais, agora):
-    """Gera 18 agendamentos sequenciais a partir de agora, 1 min de intervalo."""
+def _criar_agendamento(rotas, sentido, quando, C1, C2):
+    agendamentos = []
+    for origem_rota, destino_rota in rotas:
+        origem, destino = _direcao(sentido, origem_rota, destino_rota, C1, C2)
+        agendamentos.append({
+            "quando": quando,
+            "config_override": {
+                "origem": origem.endereco,
+                "destino": destino.endereco,
+                "openweather": {"lat": origem.lat, "lon": origem.lon},
+            },
+        })
+    return agendamentos
+
+
+def gerar_modo_sequencial(locais, sentidos):
+    """Gera agendamentos sequenciais com 'quando' = 'now'.
+
+    sentidos: lista com 'centro' e/ou 'bairro'
+    """
     C1 = next(l for l in locais if l.codigo == "C1")
     C2 = next(l for l in locais if l.codigo == "C2")
     rotas = _gerar_rotas(locais)
 
     agendamentos = []
-    proximo = agora + timedelta(minutes=1)
-
-    for origem_rota, destino_rota in rotas:
-        origem, destino = _direcao("manhã", origem_rota, destino_rota, C1, C2)
-        agendamentos.append({
-            "quando": proximo.strftime("%Y-%m-%d %H:%M"),
-            "config_override": {
-                "origem": origem.endereco,
-                "destino": destino.endereco,
-                "limite_consultas": 1,
-                "openweather": {"lat": origem.lat, "lon": origem.lon},
-            },
-        })
-        proximo += timedelta(minutes=1)
-
-        origem, destino = _direcao("tarde", origem_rota, destino_rota, C1, C2)
-        agendamentos.append({
-            "quando": proximo.strftime("%Y-%m-%d %H:%M"),
-            "config_override": {
-                "origem": origem.endereco,
-                "destino": destino.endereco,
-                "limite_consultas": 1,
-                "openweather": {"lat": origem.lat, "lon": origem.lon},
-            },
-        })
-        proximo += timedelta(minutes=1)
+    for sentido in sentidos:
+        agendamentos.extend(_criar_agendamento(rotas, sentido, "now", C1, C2))
 
     return agendamentos
 
 
-def _data_ref_programado(agora):
-    """Determina a data de referência para o modo programado."""
-    hoje = agora.date()
-    if agora.hour >= 19:
-        amanha = hoje + timedelta(days=1)
-        return datetime(amanha.year, amanha.month, amanha.day, 6, 0)
-    elif agora.hour >= 9:
-        return datetime(hoje.year, hoje.month, hoje.day, 17, 0)
-    elif agora.hour < 6:
-        return datetime(hoje.year, hoje.month, hoje.day, 6, 0)
-    else:
-        return agora
-
-
-def _cabe_na_janela(horario, duracao, fim_janela):
-    return horario + duracao <= fim_janela
-
-
-def gerar_modo_programado(locais, agora):
-    """Gera 18 agendamentos em janelas de pico (06:00-08:50 / 17:00-18:50), em até 18h."""
+def gerar_modo_programado(locais, preset):
+    """Gera agendamentos programados para o dia seguinte, 9 por momento."""
     C1 = next(l for l in locais if l.codigo == "C1")
     C2 = next(l for l in locais if l.codigo == "C2")
     rotas = _gerar_rotas(locais)
 
-    data_ref = _data_ref_programado(agora)
-    prazo_final = data_ref + timedelta(hours=18)
+    amanha = datetime.now().date() + timedelta(days=1)
 
     agendamentos = []
-    idx_manha = 0
-    idx_tarde = 0
-    dia_atual = data_ref.date()
-    limite_padrao = True
+    for hora, sentido in preset["momentos"]:
+        data = datetime(amanha.year, amanha.month, amanha.day)
+        quando = data.strftime(f"%Y-%m-%d {hora}")
+        agendamentos.extend(_criar_agendamento(rotas, sentido, quando, C1, C2))
 
-    while idx_manha < 9 or idx_tarde < 9:
-        inicio_manha = datetime(dia_atual.year, dia_atual.month, dia_atual.day, 6, 0)
-        fim_manha = datetime(dia_atual.year, dia_atual.month, dia_atual.day, 8, 50)
-        inicio_tarde = datetime(dia_atual.year, dia_atual.month, dia_atual.day, 17, 0)
-        fim_tarde = datetime(dia_atual.year, dia_atual.month, dia_atual.day, 18, 50)
-
-        # Manhã
-        if idx_manha < 9:
-            if dia_atual == data_ref.date():
-                ultimo_fim_manha = max(inicio_manha, data_ref) - timedelta(minutes=BUFFER_MINUTOS)
-            else:
-                ultimo_fim_manha = inicio_manha - timedelta(minutes=BUFFER_MINUTOS)
-
-            while idx_manha < 9:
-                origem_rota, destino_rota = rotas[idx_manha]
-                limite = 3 if not limite_padrao else random.randint(3, 9)
-                duracao = timedelta(seconds=(limite - 1) * INTERVALO_SEGUNDOS)
-
-                horario = ultimo_fim_manha + timedelta(minutes=BUFFER_MINUTOS)
-                if not _cabe_na_janela(horario, duracao, fim_manha):
-                    break
-                if horario + duracao > prazo_final:
-                    break
-
-                origem, destino = _direcao("manhã", origem_rota, destino_rota, C1, C2)
-                agendamentos.append({
-                    "quando": horario.strftime("%Y-%m-%d %H:%M"),
-                    "config_override": {
-                        "origem": origem.endereco,
-                        "destino": destino.endereco,
-                        "limite_consultas": limite,
-                        "openweather": {"lat": origem.lat, "lon": origem.lon},
-                    },
-                })
-                ultimo_fim_manha = horario + duracao
-                idx_manha += 1
-
-        # Tarde
-        if idx_tarde < 9:
-            if dia_atual == data_ref.date():
-                ultimo_fim_tarde = max(inicio_tarde, data_ref) - timedelta(minutes=BUFFER_MINUTOS)
-            else:
-                ultimo_fim_tarde = inicio_tarde - timedelta(minutes=BUFFER_MINUTOS)
-
-            while idx_tarde < 9:
-                origem_rota, destino_rota = rotas[idx_tarde]
-                limite = 3 if not limite_padrao else random.randint(3, 9)
-                duracao = timedelta(seconds=(limite - 1) * INTERVALO_SEGUNDOS)
-
-                horario = ultimo_fim_tarde + timedelta(minutes=BUFFER_MINUTOS)
-                if not _cabe_na_janela(horario, duracao, fim_tarde):
-                    break
-                if horario + duracao > prazo_final:
-                    break
-
-                origem, destino = _direcao("tarde", origem_rota, destino_rota, C1, C2)
-                agendamentos.append({
-                    "quando": horario.strftime("%Y-%m-%d %H:%M"),
-                    "config_override": {
-                        "origem": origem.endereco,
-                        "destino": destino.endereco,
-                        "limite_consultas": limite,
-                        "openweather": {"lat": origem.lat, "lon": origem.lon},
-                    },
-                })
-                ultimo_fim_tarde = horario + duracao
-                idx_tarde += 1
-
-        if idx_manha >= 9 and idx_tarde >= 9:
-            break
-
-        dia_atual += timedelta(days=1)
-
-        # Se estourou o prazo de 18h e ainda faltam agendamentos, reduz limites
-        if (idx_manha < 9 or idx_tarde < 9) and dia_atual >= prazo_final.date() and limite_padrao:
-            print("⚠️  18 agendamentos não couberam em 18h — reduzindo limite_consultas para 3")
-            agendamentos.clear()
-            idx_manha = 0
-            idx_tarde = 0
-            dia_atual = data_ref.date()
-            limite_padrao = False
-            continue
-
-        if dia_atual > prazo_final.date():
-            break
-
-    return sorted(agendamentos, key=lambda a: a["quando"])
+    return agendamentos
 
 
 def salvar_agendamentos(agendamentos):
@@ -212,7 +111,7 @@ def salvar_agendamentos(agendamentos):
 
 
 def _escolher_cidade(cidades):
-    """Exibe as cidades disponíveis e pede para o usuário escolher."""
+    """Exibe as cidades disponiveis e pede para o usuario escolher."""
     print("\n📌 Cidades com 6 locais cadastrados:")
     for i, (cidade, uf) in enumerate(cidades, 1):
         print(f"   {i}. {cidade}/{uf}")
@@ -220,27 +119,45 @@ def _escolher_cidade(cidades):
 
     while True:
         try:
-            escolha = input("Escolha o número da cidade: ").strip()
+            escolha = input("Escolha o numero da cidade: ").strip()
             idx = int(escolha) - 1
             if 0 <= idx < len(cidades):
                 return cidades[idx]
-            print(f"⚠️  Escolha um número entre 1 e {len(cidades)}.")
+            print(f"⚠️  Escolha um numero entre 1 e {len(cidades)}.")
         except ValueError:
-            print("⚠️  Digite um número válido.")
+            print("⚠️  Digite um numero valido.")
 
 
 def _escolher_modo():
-    """Pede o modo de geração ao usuário."""
-    print("\nModo de geração:")
-    print("   1. sequencial  — 1 min entre coletas, a partir de agora")
-    print("   2. programado  — horários de pico (06:00-08:50 / 17:00-18:50)")
+    """Pede o modo de geracao ao usuario."""
+    print("\nModo de geracao:")
+    print("   1. sequencial  — execucao imediata (python main.py)")
+    for nome, info in PRESETS_PROGRAMADOS.items():
+        print(f"   p.{nome}  — {info['descricao']}")
     while True:
-        escolha = input("Escolha o modo (1 ou 2): ").strip()
+        escolha = input("Escolha (1 ou nome do preset): ").strip().lower()
         if escolha == "1":
-            return "sequencial"
+            return ("sequencial", None)
+        if escolha in PRESETS_PROGRAMADOS:
+            return ("programado", escolha)
+        print(f"⚠️  Opcao invalida. Digite 1 ou um dos presets: {', '.join(PRESETS_PROGRAMADOS)}.")
+
+
+def _escolher_sentido():
+    """Pergunta quais sentidos incluir no modo sequencial."""
+    print("\nSentido dos trajetos:")
+    print("   1. todos (18 rotas)")
+    print("   2. so sentido centro (9 rotas)")
+    print("   3. so sentido bairro (9 rotas)")
+    while True:
+        escolha = input("Escolha (1, 2 ou 3): ").strip()
+        if escolha == "1":
+            return ["centro", "bairro"]
         if escolha == "2":
-            return "programado"
-        print("⚠️  Digite 1 ou 2.")
+            return ["centro"]
+        if escolha == "3":
+            return ["bairro"]
+        print("⚠️  Digite 1, 2 ou 3.")
 
 
 def main():
@@ -255,7 +172,7 @@ def main():
         sys.exit(1)
 
     cidade, uf = _escolher_cidade(cidades) if len(cidades) > 1 else cidades[0]
-    modo = _escolher_modo()
+    modo, preset_nome = _escolher_modo()
 
     repo = RepositorioBanco("mobilidade.db")
     repo.inicializar()
@@ -263,21 +180,21 @@ def main():
     repo.fechar()
 
     if len(locais) != 6:
-        print(f"❌ São necessários 6 locais cadastrados para {cidade}/{uf}, mas há {len(locais)}.")
+        print(f"❌ Sao necessarios 6 locais cadastrados para {cidade}/{uf}, mas ha {len(locais)}.")
         print(f"   Execute primeiro: python gerador_locais.py")
         sys.exit(1)
 
-    agora = datetime.now().replace(second=0, microsecond=0)
-
     if modo == "sequencial":
-        print(f"\n▶️  Modo SEQUENCIAL — 1 min entre coletas, a partir de {agora.strftime('%H:%M')}")
-        agendamentos = gerar_modo_sequencial(locais, agora)
+        sentidos = _escolher_sentido()
+        labels = {"centro": "E/M→C", "bairro": "C→E/M"}
+        sentido_str = " + ".join(labels[s] for s in sentidos)
+        print(f"\n▶️  Modo SEQUENCIAL — {sentido_str}")
+        agendamentos = gerar_modo_sequencial(locais, sentidos)
     else:
-        print(f"\n📅 Modo PROGRAMADO — gerando agendamentos em horários de pico")
-        agendamentos = gerar_modo_programado(locais, agora)
-
-    if len(agendamentos) < 18:
-        print(f"⚠️  Apenas {len(agendamentos)} de 18 agendamentos couberam no período")
+        preset = PRESETS_PROGRAMADOS[preset_nome]
+        print(f"\n📅 Modo PROGRAMADO — {preset['descricao']}")
+        print(f"   Data: {datetime.now().date() + timedelta(days=1)} (dia seguinte)")
+        agendamentos = gerar_modo_programado(locais, preset)
 
     salvar_agendamentos(agendamentos)
 

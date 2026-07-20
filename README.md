@@ -71,26 +71,31 @@ Edite o arquivo `config.json` que esta na mesma pasta do `.exe`:
 
 ```json
 {
-  "app": "99",
-  "destino": "Seu destino aqui",
-  "limite_consultas": 2,
   "appium": {
     "server": "http://127.0.0.1:4723",
-    "device": "MotoG86",
-    "app_package": "com.taxis99"
+    "99": {
+      "active": true,
+      "app_package": "com.taxis99",
+      "capturar_metricas": false
+    },
+    "uber": {
+      "active": true,
+      "app_package": "com.ubercab",
+      "capturar_metricas": true
+    }
   },
   "persistencia": {
     "tipo": "banco",
     "caminho": "mobilidade.db"
+  },
+  "logging": {
+    "level": "INFO"
   }
 }
 ```
 
-Ajuste:
-- `destino`: endereco ou local de destino para a busca
-- `limite_consultas`: numero de coletas a realizar
-- `device`: nome do dispositivo (use `adb devices` para verificar)
-- `app_package`: pacote do app 99 (`com.taxis99`)
+Os agendamentos (origem, destino, coordenadas) ficam em `agendamentos.json`.
+Veja `config.json.example` e `agendamentos.json` como referencia.
 
 #### 4. Executar o dashboard
 

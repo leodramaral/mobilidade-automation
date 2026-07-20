@@ -35,16 +35,23 @@ class AgendadorService:
     def registrar_jobs(self):
         agora = datetime.now()
         for idx, agend in enumerate(self.agendamentos):
-            data_execucao = self._parse_data(agend["quando"])
+            quando = agend.get("quando", "now")
+            if quando == "now":
+                continue
+            try:
+                data_execucao = self._parse_data(quando)
+            except ValueError:
+                logger.warning("Agendamento pulado", quando=quando, motivo="formato de data invalido")
+                continue
             if data_execucao <= agora:
-                logger.info("Agendamento pulado", quando=agend['quando'], motivo="data/hora já passou")
+                logger.info("Agendamento pulado", quando=quando, motivo="data/hora ja passou")
                 continue
             trigger = DateTrigger(run_date=data_execucao)
             job_id = f"coleta_{idx}"
             self.scheduler.add_job(self._executar_agendamento, trigger, args=[agend], id=job_id, misfire_grace_time=None)
             origem = agend['config_override'].get('origem', '?')
             destino = agend['config_override'].get('destino', '?')
-            logger.info("Agendamento registrado", quando=agend['quando'], origem=origem, destino=destino)
+            logger.info("Agendamento registrado", quando=quando, origem=origem, destino=destino)
 
     def iniciar(self):
         self.registrar_jobs()
