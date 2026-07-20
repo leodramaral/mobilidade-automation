@@ -62,6 +62,7 @@ def gerar_modo_teste(locais, agora):
                 "origem": origem.endereco,
                 "destino": destino.endereco,
                 "limite_consultas": limite,
+                "openweather": {"lat": origem.lat, "lon": origem.lon},
             },
         })
         proximo += duracao + timedelta(minutes=BUFFER_MINUTOS)
@@ -74,6 +75,7 @@ def gerar_modo_teste(locais, agora):
                 "origem": origem.endereco,
                 "destino": destino.endereco,
                 "limite_consultas": limite,
+                "openweather": {"lat": origem.lat, "lon": origem.lon},
             },
         })
         proximo += duracao + timedelta(minutes=BUFFER_MINUTOS)
@@ -145,6 +147,7 @@ def gerar_modo_programado(locais, agora):
                         "origem": origem.endereco,
                         "destino": destino.endereco,
                         "limite_consultas": limite,
+                        "openweather": {"lat": origem.lat, "lon": origem.lon},
                     },
                 })
                 ultimo_fim_manha = horario + duracao
@@ -175,6 +178,7 @@ def gerar_modo_programado(locais, agora):
                         "origem": origem.endereco,
                         "destino": destino.endereco,
                         "limite_consultas": limite,
+                        "openweather": {"lat": origem.lat, "lon": origem.lon},
                     },
                 })
                 ultimo_fim_tarde = horario + duracao
