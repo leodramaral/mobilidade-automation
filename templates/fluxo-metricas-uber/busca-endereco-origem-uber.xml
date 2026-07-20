@@ -1,0 +1,809 @@
+<?xml version="1.0" encoding="utf-8"?>
+<hierarchy index="0" class="hierarchy" rotation="0" width="1200" height="1836">
+  
+  
+  <android.widget.FrameLayout index="0" package="com.ubercab" class="android.widget.FrameLayout" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[0,0][1200,1920]" displayed="true" a11y-important="true" screen-reader-focusable="false" drawing-order="0" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+    
+    
+    <android.widget.LinearLayout index="0" package="com.ubercab" class="android.widget.LinearLayout" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[0,0][1200,1920]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+      
+      
+      <android.widget.FrameLayout index="0" package="com.ubercab" class="android.widget.FrameLayout" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[0,0][1200,1920]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="2" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+        
+        
+        <android.widget.LinearLayout index="0" package="com.ubercab" class="android.widget.LinearLayout" text="" resource-id="com.ubercab:id/action_bar_root" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[0,0][1200,1920]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+          
+          
+          <android.widget.FrameLayout index="0" package="com.ubercab" class="android.widget.FrameLayout" text="" resource-id="android:id/content" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[0,0][1200,1920]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="2" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+            
+            
+            <android.view.ViewGroup index="0" package="com.ubercab" class="android.view.ViewGroup" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[0,0][1200,1920]" displayed="true" a11y-important="true" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+              
+              
+              <android.view.ViewGroup index="0" package="com.ubercab" class="android.view.ViewGroup" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[0,0][1200,1920]" displayed="true" a11y-important="true" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                
+                
+                <android.view.ViewGroup index="0" package="com.ubercab" class="android.view.ViewGroup" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[0,0][1200,1920]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                  
+                  
+                  <android.view.ViewGroup index="0" package="com.ubercab" class="android.view.ViewGroup" text="" resource-id="com.ubercab:id/root_content" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[0,0][1200,1920]" displayed="true" a11y-important="true" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                    
+                    
+                    <android.view.ViewGroup index="0" package="com.ubercab" class="android.view.ViewGroup" text="" resource-id="com.ubercab:id/ub__content_id" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[0,0][1200,1920]" displayed="true" a11y-important="true" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                      
+                      
+                      <android.view.ViewGroup index="0" package="com.ubercab" class="android.view.ViewGroup" text="" resource-id="com.ubercab:id/content_frame" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[0,0][1200,1920]" displayed="true" a11y-important="true" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733"/>
+                      
+                      
+                      <android.view.ViewGroup index="1" package="com.ubercab" class="android.view.ViewGroup" text="" resource-id="com.ubercab:id/ub__content_id" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[0,0][1200,1920]" displayed="true" a11y-important="true" screen-reader-focusable="false" drawing-order="4" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                        
+                        
+                        <androidx.drawerlayout.widget.DrawerLayout index="0" package="com.ubercab" class="androidx.drawerlayout.widget.DrawerLayout" text="" resource-id="com.ubercab:id/drawer" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[0,0][1200,1920]" displayed="true" a11y-important="true" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                          
+                          
+                          <android.view.ViewGroup index="0" package="com.ubercab" class="android.view.ViewGroup" text="" resource-id="com.ubercab:id/content_frame" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[0,0][1200,1920]" displayed="true" a11y-important="true" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                            
+                            
+                            <android.widget.FrameLayout index="0" package="com.ubercab" class="android.widget.FrameLayout" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[0,0][1200,1920]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="3" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733"/>
+                            
+                            
+                            <android.view.ViewGroup index="1" package="com.ubercab" class="android.view.ViewGroup" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[0,0][1200,1920]" displayed="true" a11y-important="true" screen-reader-focusable="false" drawing-order="7" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                              
+                              
+                              <android.view.ViewGroup index="0" package="com.ubercab" class="android.view.ViewGroup" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[0,0][1200,1920]" displayed="true" a11y-important="true" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                
+                                
+                                <android.view.ViewGroup index="0" package="com.ubercab" class="android.view.ViewGroup" text="" resource-id="com.ubercab:id/ub__map_search_pin_frame" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[0,0][1200,1920]" displayed="true" a11y-important="true" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733"/>
+                                
+                              
+                              </android.view.ViewGroup>
+                              
+                              
+                              <android.widget.LinearLayout index="1" package="com.ubercab" class="android.widget.LinearLayout" text="" resource-id="com.ubercab:id/location_editor_bottom_sheet_view" checkable="false" checked="false" clickable="true" enabled="true" focusable="true" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[0,42][1200,1920]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="3" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                
+                                
+                                <android.widget.FrameLayout index="0" package="com.ubercab" class="android.widget.FrameLayout" text="" content-desc="Controlador de altura da folha" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[0,42][1200,70]" displayed="true" a11y-important="true" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                  
+                                  
+                                  <android.view.View index="0" package="com.ubercab" class="android.view.View" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[558,63][642,70]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733"/>
+                                  
+                                
+                                </android.widget.FrameLayout>
+                                
+                                
+                                <android.widget.FrameLayout index="2" package="com.ubercab" class="android.widget.FrameLayout" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[0,70][1200,1920]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="3" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                  
+                                  
+                                  <android.widget.LinearLayout index="0" package="com.ubercab" class="android.widget.LinearLayout" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[0,70][1200,1920]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                    
+                                    
+                                    <android.widget.LinearLayout index="0" package="com.ubercab" class="android.widget.LinearLayout" text="" resource-id="com.ubercab:id/ub__address_entry_view" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[0,70][1200,430]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="2" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                      
+                                      
+                                      <android.view.ViewGroup index="0" package="com.ubercab" class="android.view.ViewGroup" text="" resource-id="com.ubercab:id/ub__location_edit_view" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[0,70][1200,430]" displayed="true" a11y-important="true" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                        
+                                        
+                                        <android.widget.FrameLayout index="0" package="com.ubercab" class="android.widget.FrameLayout" text="" resource-id="com.ubercab:id/ub__address_entry_editor_card_view" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[0,70][1200,430]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                          
+                                          
+                                          <android.widget.LinearLayout index="0" package="com.ubercab" class="android.widget.LinearLayout" text="" resource-id="com.ubercab:id/ub__location_edit_search_box" checkable="false" checked="false" clickable="true" enabled="true" focusable="true" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[0,70][1200,430]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                            
+                                            
+                                            <android.view.ViewGroup index="0" package="com.ubercab" class="android.view.ViewGroup" text="" resource-id="com.ubercab:id/ub__location_edit_header" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[0,70][1200,196]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                              
+                                              
+                                              <android.widget.FrameLayout index="0" package="com.ubercab" class="android.widget.FrameLayout" text="" content-desc="Voltar" resource-id="com.ubercab:id/header_view__leading_asset_container" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[14,91][98,175]" displayed="true" a11y-important="true" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                                
+                                                
+                                                <android.widget.Button index="0" package="com.ubercab" class="android.widget.Button" text="" content-desc="Voltar" checkable="false" checked="false" clickable="true" enabled="true" focusable="true" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[14,91][98,175]" displayed="true" a11y-important="true" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733"/>
+                                                
+                                              
+                                              </android.widget.FrameLayout>
+                                              
+                                              
+                                              <android.widget.TextView index="1" package="com.ubercab" class="android.widget.TextView" text="Planeje sua próxima viagem" resource-id="com.ubercab:id/header_view__label_text_view" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[28,109][1172,158]" displayed="true" a11y-important="true" screen-reader-focusable="false" drawing-order="3" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="true" live-region="0" context-clickable="false" content-invalid="false" window-id="4733"/>
+                                              
+                                            
+                                            </android.view.ViewGroup>
+                                            
+                                            
+                                            <android.widget.LinearLayout index="1" package="com.ubercab" class="android.widget.LinearLayout" text="" resource-id="com.ubercab:id/ub__address_entry_pills_plugin_container" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[0,196][1200,294]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="4" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                              
+                                              
+                                              <android.widget.HorizontalScrollView index="0" package="com.ubercab" class="android.widget.HorizontalScrollView" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="true" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[28,196][499,294]" displayed="true" a11y-important="true" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                                
+                                                
+                                                <android.widget.LinearLayout index="0" package="com.ubercab" class="android.widget.LinearLayout" text="" resource-id="com.ubercab:id/pill_plugins_container" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[28,196][499,280]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                                  
+                                                  
+                                                  <android.widget.LinearLayout index="0" package="com.ubercab" class="android.widget.LinearLayout" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[28,206][253,269]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                                    
+                                                    
+                                                    <android.widget.Button index="0" package="com.ubercab" class="android.widget.Button" text="Ir agora" content-desc="Horário de partida: Ir agora. Editar" checkable="false" checked="false" clickable="true" enabled="true" focusable="true" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[28,206][239,269]" displayed="true" a11y-important="true" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733"/>
+                                                    
+                                                  
+                                                  </android.widget.LinearLayout>
+                                                  
+                                                  
+                                                  <android.widget.LinearLayout index="1" package="com.ubercab" class="android.widget.LinearLayout" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[253,206][499,269]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="2" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                                    
+                                                    
+                                                    <android.widget.Button index="0" package="com.ubercab" class="android.widget.Button" text="Para mim" content-desc="Usuário: Para mim. Mudar de usuário" resource-id="com.ubercab:id/pill_button_guest" checkable="false" checked="false" clickable="true" enabled="true" focusable="true" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[253,206][485,269]" displayed="true" a11y-important="true" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733"/>
+                                                    
+                                                  
+                                                  </android.widget.LinearLayout>
+                                                  
+                                                
+                                                </android.widget.LinearLayout>
+                                                
+                                              
+                                              </android.widget.HorizontalScrollView>
+                                              
+                                            
+                                            </android.widget.LinearLayout>
+                                            
+                                            
+                                            <android.widget.FrameLayout index="2" package="com.ubercab" class="android.widget.FrameLayout" text="" resource-id="com.ubercab:id/location_editor_container" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[0,294][1200,430]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="5" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                              
+                                              
+                                              <android.widget.LinearLayout index="0" package="com.ubercab" class="android.widget.LinearLayout" text="" resource-id="com.ubercab:id/ub__location_edit_container" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[0,294][1186,430]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                                
+                                                
+                                                <android.widget.LinearLayout index="0" package="com.ubercab" class="android.widget.LinearLayout" text="" resource-id="com.ubercab:id/ub__location_edit_search_group_container" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[28,294][1087,416]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                                  
+                                                  
+                                                  <android.view.View index="0" package="com.ubercab" class="android.view.View" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[53,298][81,412]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733"/>
+                                                  
+                                                  
+                                                  <android.widget.LinearLayout index="1" package="com.ubercab" class="android.widget.LinearLayout" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[109,298][1083,412]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="2" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                                    
+                                                    
+                                                    <android.widget.FrameLayout index="0" package="com.ubercab" class="android.widget.FrameLayout" text="" resource-id="com.ubercab:id/ub__location_edit_search_container_pickup" checkable="false" checked="false" clickable="true" enabled="true" focusable="true" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[109,298][1083,354]" displayed="true" a11y-important="true" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                                      
+                                                      
+                                                      <android.widget.Button index="0" package="com.ubercab" class="android.widget.Button" text="" resource-id="com.ubercab:id/ub__location_edit_search_pickup_edit" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[109,305][1062,347]" displayed="true" a11y-important="true" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                                        
+                                                        
+                                                        <android.widget.LinearLayout index="0" package="com.ubercab" class="android.widget.LinearLayout" text="" resource-id="com.ubercab:id/vertical_layout" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[109,305][1029,347]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                                          
+                                                          
+                                                          <android.widget.EditText index="0" package="com.ubercab" class="android.widget.EditText" text="Av. Mario Ypiranga, no 315" resource-id="com.ubercab:id/edit_text" checkable="false" checked="false" clickable="true" enabled="true" focusable="true" focused="true" long-clickable="true" password="false" scrollable="false" selection-start="0" selection-end="26" selected="false" bounds="[109,305][1029,347]" displayed="true" hint="Insira o local de partida" a11y-important="true" screen-reader-focusable="false" input-type="524289" drawing-order="2" showing-hint="false" text-entry-key="false" multiline="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" max-text-length="5000" content-invalid="false" window-id="4733"/>
+                                                          
+                                                        
+                                                        </android.widget.LinearLayout>
+                                                        
+                                                        
+                                                        <android.widget.ImageView index="1" package="com.ubercab" class="android.widget.ImageView" text="" content-desc="Limpar texto da localização" resource-id="com.ubercab:id/image_view" checkable="false" checked="false" clickable="true" enabled="true" focusable="true" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[1034,312][1062,340]" displayed="true" a11y-important="true" screen-reader-focusable="false" drawing-order="2" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733"/>
+                                                        
+                                                      
+                                                      </android.widget.Button>
+                                                      
+                                                    
+                                                    </android.widget.FrameLayout>
+                                                    
+                                                    
+                                                    <android.widget.FrameLayout index="1" package="com.ubercab" class="android.widget.FrameLayout" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[109,354][1083,356]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="2" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                                      
+                                                      
+                                                      <android.view.View index="0" package="com.ubercab" class="android.view.View" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[109,354][1083,355]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733"/>
+                                                      
+                                                    
+                                                    </android.widget.FrameLayout>
+                                                    
+                                                    
+                                                    <android.widget.FrameLayout index="2" package="com.ubercab" class="android.widget.FrameLayout" text="" resource-id="com.ubercab:id/ub__location_edit_search_container_destination" checkable="false" checked="false" clickable="true" enabled="true" focusable="true" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[109,356][1083,412]" displayed="true" a11y-important="true" screen-reader-focusable="false" drawing-order="3" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                                      
+                                                      
+                                                      <android.widget.LinearLayout index="0" package="com.ubercab" class="android.widget.LinearLayout" text="" resource-id="com.ubercab:id/ub__location_edit_search_destination_view_container" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[109,363][1062,405]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="2" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                                        
+                                                        
+                                                        <android.widget.Button index="0" package="com.ubercab" class="android.widget.Button" text="Para onde?" resource-id="com.ubercab:id/ub__location_edit_search_destination_view" checkable="false" checked="false" clickable="true" enabled="true" focusable="true" focused="false" long-clickable="true" password="false" scrollable="false" selected="false" bounds="[109,363][1020,405]" displayed="true" hint="Para onde?" a11y-important="true" screen-reader-focusable="false" input-type="524289" drawing-order="2" showing-hint="true" text-entry-key="false" multiline="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" max-text-length="5000" content-invalid="false" window-id="4733"/>
+                                                        
+                                                      
+                                                      </android.widget.LinearLayout>
+                                                      
+                                                    
+                                                    </android.widget.FrameLayout>
+                                                    
+                                                  
+                                                  </android.widget.LinearLayout>
+                                                  
+                                                
+                                                </android.widget.LinearLayout>
+                                                
+                                                
+                                                <android.widget.LinearLayout index="1" package="com.ubercab" class="android.widget.LinearLayout" text="" resource-id="com.ubercab:id/ub__address_entry_right_plugin_container" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[1101,294][1186,416]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="2" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                                  
+                                                  
+                                                  <android.widget.LinearLayout index="0" package="com.ubercab" class="android.widget.LinearLayout" text="" resource-id="com.ubercab:id/ub__add_destination_entry_point" checkable="false" checked="false" clickable="true" enabled="true" focusable="true" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[1101,312][1186,397]" displayed="true" a11y-important="true" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                                    
+                                                    
+                                                    <android.view.ViewGroup index="0" package="com.ubercab" class="android.view.ViewGroup" text="" content-desc="Adicionar outro destino" resource-id="com.ubercab:id/ub__add_destination_entry_point_icon" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[1112,323][1175,386]" displayed="true" a11y-important="true" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                                      
+                                                      
+                                                      <android.view.View index="0" package="com.ubercab" class="android.view.View" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[1112,323][1175,386]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="0" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                                        
+                                                        
+                                                        <android.view.View index="0" package="com.ubercab" class="android.view.View" text="" checkable="false" checked="false" clickable="true" enabled="true" focusable="true" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[1112,323][1175,386]" displayed="true" a11y-important="true" screen-reader-focusable="true" drawing-order="0" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                                          
+                                                          
+                                                          <android.view.View index="0" package="com.ubercab" class="android.view.View" text="" content-desc="Adicionar outro destino" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[1114,325][1177,388]" displayed="true" a11y-important="true" screen-reader-focusable="false" drawing-order="0" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733"/>
+                                                          
+                                                          
+                                                          <android.view.View index="1" package="com.ubercab" class="android.view.View" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[1112,323][1175,386]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733"/>
+                                                          
+                                                          
+                                                          <android.widget.Button index="2" package="com.ubercab" class="android.widget.Button" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[1114,325][1177,388]" displayed="true" a11y-important="true" screen-reader-focusable="false" drawing-order="2" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733"/>
+                                                          
+                                                        
+                                                        </android.view.View>
+                                                        
+                                                      
+                                                      </android.view.View>
+                                                      
+                                                    
+                                                    </android.view.ViewGroup>
+                                                    
+                                                  
+                                                  </android.widget.LinearLayout>
+                                                  
+                                                
+                                                </android.widget.LinearLayout>
+                                                
+                                              
+                                              </android.widget.LinearLayout>
+                                              
+                                            
+                                            </android.widget.FrameLayout>
+                                            
+                                          
+                                          </android.widget.LinearLayout>
+                                          
+                                          
+                                          <android.widget.FrameLayout index="1" package="com.ubercab" class="android.widget.FrameLayout" text="" resource-id="com.ubercab:id/loading_container" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[0,426][1200,430]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="2" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733"/>
+                                          
+                                        
+                                        </android.widget.FrameLayout>
+                                        
+                                      
+                                      </android.view.ViewGroup>
+                                      
+                                    
+                                    </android.widget.LinearLayout>
+                                    
+                                    
+                                    <android.widget.FrameLayout index="1" package="com.ubercab" class="android.widget.FrameLayout" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[0,430][1200,1920]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                      
+                                      
+                                      <android.widget.LinearLayout index="0" package="com.ubercab" class="android.widget.LinearLayout" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[0,430][1200,1920]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                        
+                                        
+                                        <android.widget.ScrollView index="0" package="com.ubercab" class="android.widget.ScrollView" text="" resource-id="com.ubercab:id/ub__text_search_v2_scroll_view" checkable="false" checked="false" clickable="false" enabled="true" focusable="true" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[0,430][1200,1920]" displayed="true" a11y-important="true" screen-reader-focusable="false" drawing-order="2" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                          
+                                          
+                                          <android.widget.LinearLayout index="0" package="com.ubercab" class="android.widget.LinearLayout" text="" resource-id="com.ubercab:id/ub__text_search_v2_results" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[0,430][1200,1691]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                            
+                                            
+                                            <android.widget.FrameLayout index="0" package="com.ubercab" class="android.widget.FrameLayout" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[0,430][1200,527]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                              
+                                              
+                                              <android.widget.Button index="0" package="com.ubercab" class="android.widget.Button" text="" content-desc="Av. Mario Ypiranga, no 315, Adrianópolis - Manaus - AM" checkable="false" checked="false" clickable="true" enabled="true" focusable="true" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[0,430][1200,527]" displayed="true" a11y-important="true" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                                
+                                                
+                                                <android.widget.LinearLayout index="0" package="com.ubercab" class="android.widget.LinearLayout" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[24,447][87,510]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                                  
+                                                  
+                                                  <android.widget.ImageView index="0" package="com.ubercab" class="android.widget.ImageView" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[41,464][69,492]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733"/>
+                                                  
+                                                
+                                                </android.widget.LinearLayout>
+                                                
+                                                
+                                                <android.widget.LinearLayout index="1" package="com.ubercab" class="android.widget.LinearLayout" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[111,444][1172,523]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="2" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                                  
+                                                  
+                                                  <android.widget.TextView index="0" package="com.ubercab" class="android.widget.TextView" text="Av. Mario Ypiranga, no 315" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[111,444][419,476]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733"/>
+                                                  
+                                                  
+                                                  <android.widget.TextView index="1" package="com.ubercab" class="android.widget.TextView" text="Adrianópolis - Manaus - AM" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[111,476][429,508]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="2" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733"/>
+                                                  
+                                                  
+                                                  <android.widget.FrameLayout index="2" package="com.ubercab" class="android.widget.FrameLayout" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[111,522][1172,523]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="3" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                                    
+                                                    
+                                                    <android.view.View index="0" package="com.ubercab" class="android.view.View" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[111,522][1172,523]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733"/>
+                                                    
+                                                  
+                                                  </android.widget.FrameLayout>
+                                                  
+                                                
+                                                </android.widget.LinearLayout>
+                                                
+                                              
+                                              </android.widget.Button>
+                                              
+                                            
+                                            </android.widget.FrameLayout>
+                                            
+                                            
+                                            <android.widget.FrameLayout index="1" package="com.ubercab" class="android.widget.FrameLayout" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[0,527][1200,624]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="2" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                              
+                                              
+                                              <android.widget.Button index="0" package="com.ubercab" class="android.widget.Button" text="" content-desc="Av. Mario Ypiranga, 315 edificio. the office, Adrianópolis - Manaus - AM" checkable="false" checked="false" clickable="true" enabled="true" focusable="true" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[0,527][1200,624]" displayed="true" a11y-important="true" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                                
+                                                
+                                                <android.widget.LinearLayout index="0" package="com.ubercab" class="android.widget.LinearLayout" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[24,544][87,607]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                                  
+                                                  
+                                                  <android.widget.ImageView index="0" package="com.ubercab" class="android.widget.ImageView" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[41,561][69,589]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733"/>
+                                                  
+                                                
+                                                </android.widget.LinearLayout>
+                                                
+                                                
+                                                <android.widget.LinearLayout index="1" package="com.ubercab" class="android.widget.LinearLayout" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[111,541][1172,620]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="2" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                                  
+                                                  
+                                                  <android.widget.TextView index="0" package="com.ubercab" class="android.widget.TextView" text="Av. Mario Ypiranga, 315 edificio. the office" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[111,541][604,573]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733"/>
+                                                  
+                                                  
+                                                  <android.widget.TextView index="1" package="com.ubercab" class="android.widget.TextView" text="Adrianópolis - Manaus - AM" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[111,573][429,605]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="2" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733"/>
+                                                  
+                                                  
+                                                  <android.widget.FrameLayout index="2" package="com.ubercab" class="android.widget.FrameLayout" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[111,619][1172,620]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="3" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                                    
+                                                    
+                                                    <android.view.View index="0" package="com.ubercab" class="android.view.View" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[111,619][1172,620]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733"/>
+                                                    
+                                                  
+                                                  </android.widget.FrameLayout>
+                                                  
+                                                
+                                                </android.widget.LinearLayout>
+                                                
+                                              
+                                              </android.widget.Button>
+                                              
+                                            
+                                            </android.widget.FrameLayout>
+                                            
+                                            
+                                            <android.widget.FrameLayout index="2" package="com.ubercab" class="android.widget.FrameLayout" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[0,624][1200,721]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="3" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                              
+                                              
+                                              <android.widget.Button index="0" package="com.ubercab" class="android.widget.Button" text="" content-desc="Pesquisar em uma cidade diferente" checkable="false" checked="false" clickable="true" enabled="true" focusable="true" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[0,624][1200,721]" displayed="true" a11y-important="true" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                                
+                                                
+                                                <android.widget.LinearLayout index="0" package="com.ubercab" class="android.widget.LinearLayout" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[24,641][87,704]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                                  
+                                                  
+                                                  <android.widget.ImageView index="0" package="com.ubercab" class="android.widget.ImageView" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[41,658][69,686]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733"/>
+                                                  
+                                                
+                                                </android.widget.LinearLayout>
+                                                
+                                                
+                                                <android.widget.LinearLayout index="1" package="com.ubercab" class="android.widget.LinearLayout" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[111,655][1172,719]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="2" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                                  
+                                                  
+                                                  <android.widget.TextView index="0" package="com.ubercab" class="android.widget.TextView" text="Pesquisar em uma cidade diferente" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[111,655][529,687]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733"/>
+                                                  
+                                                  
+                                                  <android.widget.FrameLayout index="1" package="com.ubercab" class="android.widget.FrameLayout" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[111,718][1172,719]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="2" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                                    
+                                                    
+                                                    <android.view.View index="0" package="com.ubercab" class="android.view.View" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[111,718][1172,719]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733"/>
+                                                    
+                                                  
+                                                  </android.widget.FrameLayout>
+                                                  
+                                                
+                                                </android.widget.LinearLayout>
+                                                
+                                              
+                                              </android.widget.Button>
+                                              
+                                            
+                                            </android.widget.FrameLayout>
+                                            
+                                            
+                                            <android.widget.FrameLayout index="3" package="com.ubercab" class="android.widget.FrameLayout" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[0,721][1200,818]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="4" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                              
+                                              
+                                              <android.widget.Button index="0" package="com.ubercab" class="android.widget.Button" text="" content-desc="Av. Mario Ipiranga, 315, Adrianópolis - Manaus - AM" checkable="false" checked="false" clickable="true" enabled="true" focusable="true" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[0,721][1200,818]" displayed="true" a11y-important="true" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                                
+                                                
+                                                <android.widget.LinearLayout index="0" package="com.ubercab" class="android.widget.LinearLayout" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[24,738][87,801]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                                  
+                                                  
+                                                  <android.widget.ImageView index="0" package="com.ubercab" class="android.widget.ImageView" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[41,755][69,783]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733"/>
+                                                  
+                                                
+                                                </android.widget.LinearLayout>
+                                                
+                                                
+                                                <android.widget.LinearLayout index="1" package="com.ubercab" class="android.widget.LinearLayout" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[111,735][1172,814]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="2" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                                  
+                                                  
+                                                  <android.widget.TextView index="0" package="com.ubercab" class="android.widget.TextView" text="Av. Mario Ipiranga, 315" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[111,735][375,767]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733"/>
+                                                  
+                                                  
+                                                  <android.widget.TextView index="1" package="com.ubercab" class="android.widget.TextView" text="Adrianópolis - Manaus - AM" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[111,767][429,799]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="2" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733"/>
+                                                  
+                                                  
+                                                  <android.widget.FrameLayout index="2" package="com.ubercab" class="android.widget.FrameLayout" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[111,813][1172,814]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="3" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                                    
+                                                    
+                                                    <android.view.View index="0" package="com.ubercab" class="android.view.View" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[111,813][1172,814]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733"/>
+                                                    
+                                                  
+                                                  </android.widget.FrameLayout>
+                                                  
+                                                
+                                                </android.widget.LinearLayout>
+                                                
+                                              
+                                              </android.widget.Button>
+                                              
+                                            
+                                            </android.widget.FrameLayout>
+                                            
+                                            
+                                            <android.widget.FrameLayout index="4" package="com.ubercab" class="android.widget.FrameLayout" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[0,818][1200,915]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="5" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                              
+                                              
+                                              <android.widget.Button index="0" package="com.ubercab" class="android.widget.Button" text="" content-desc="VM Imports, av. mário ypiranga, 315 - sala 520, Adrianópolis - Manaus - AM, 69057-000" checkable="false" checked="false" clickable="true" enabled="true" focusable="true" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[0,818][1200,915]" displayed="true" a11y-important="true" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                                
+                                                
+                                                <android.widget.LinearLayout index="0" package="com.ubercab" class="android.widget.LinearLayout" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[24,835][87,898]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                                  
+                                                  
+                                                  <android.widget.ImageView index="0" package="com.ubercab" class="android.widget.ImageView" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[41,852][69,880]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733"/>
+                                                  
+                                                
+                                                </android.widget.LinearLayout>
+                                                
+                                                
+                                                <android.widget.LinearLayout index="1" package="com.ubercab" class="android.widget.LinearLayout" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[111,832][1172,911]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="2" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                                  
+                                                  
+                                                  <android.widget.TextView index="0" package="com.ubercab" class="android.widget.TextView" text="VM Imports" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[111,832][251,864]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733"/>
+                                                  
+                                                  
+                                                  <android.widget.TextView index="1" package="com.ubercab" class="android.widget.TextView" text="av. mário ypiranga, 315 - sala 520, Adrianópolis - Manaus - AM, 69057-000" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[111,864][957,896]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="2" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733"/>
+                                                  
+                                                  
+                                                  <android.widget.FrameLayout index="2" package="com.ubercab" class="android.widget.FrameLayout" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[111,910][1172,911]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="3" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                                    
+                                                    
+                                                    <android.view.View index="0" package="com.ubercab" class="android.view.View" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[111,910][1172,911]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733"/>
+                                                    
+                                                  
+                                                  </android.widget.FrameLayout>
+                                                  
+                                                
+                                                </android.widget.LinearLayout>
+                                                
+                                              
+                                              </android.widget.Button>
+                                              
+                                            
+                                            </android.widget.FrameLayout>
+                                            
+                                            
+                                            <android.widget.FrameLayout index="5" package="com.ubercab" class="android.widget.FrameLayout" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[0,915][1200,1012]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="6" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                              
+                                              
+                                              <android.widget.Button index="0" package="com.ubercab" class="android.widget.Button" text="" content-desc="TS Clinic, av. mário ypiranga, 315 - sala 1518, Adrianópolis - Manaus - AM, 69057-000" checkable="false" checked="false" clickable="true" enabled="true" focusable="true" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[0,915][1200,1012]" displayed="true" a11y-important="true" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                                
+                                                
+                                                <android.widget.LinearLayout index="0" package="com.ubercab" class="android.widget.LinearLayout" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[24,932][87,995]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                                  
+                                                  
+                                                  <android.widget.ImageView index="0" package="com.ubercab" class="android.widget.ImageView" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[41,949][69,977]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733"/>
+                                                  
+                                                
+                                                </android.widget.LinearLayout>
+                                                
+                                                
+                                                <android.widget.LinearLayout index="1" package="com.ubercab" class="android.widget.LinearLayout" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[111,929][1172,1008]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="2" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                                  
+                                                  
+                                                  <android.widget.TextView index="0" package="com.ubercab" class="android.widget.TextView" text="TS Clinic" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[111,929][215,961]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733"/>
+                                                  
+                                                  
+                                                  <android.widget.TextView index="1" package="com.ubercab" class="android.widget.TextView" text="av. mário ypiranga, 315 - sala 1518, Adrianópolis - Manaus - AM, 69057-000" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[111,961][963,993]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="2" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733"/>
+                                                  
+                                                  
+                                                  <android.widget.FrameLayout index="2" package="com.ubercab" class="android.widget.FrameLayout" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[111,1007][1172,1008]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="3" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                                    
+                                                    
+                                                    <android.view.View index="0" package="com.ubercab" class="android.view.View" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[111,1007][1172,1008]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733"/>
+                                                    
+                                                  
+                                                  </android.widget.FrameLayout>
+                                                  
+                                                
+                                                </android.widget.LinearLayout>
+                                                
+                                              
+                                              </android.widget.Button>
+                                              
+                                            
+                                            </android.widget.FrameLayout>
+                                            
+                                            
+                                            <android.widget.FrameLayout index="6" package="com.ubercab" class="android.widget.FrameLayout" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[0,1012][1200,1109]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="7" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                              
+                                              
+                                              <android.widget.Button index="0" package="com.ubercab" class="android.widget.Button" text="" content-desc="Rua Teresina Cond. Barao Da Villa, 386, Adrianópolis - Manaus - AM" checkable="false" checked="false" clickable="true" enabled="true" focusable="true" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[0,1012][1200,1109]" displayed="true" a11y-important="true" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                                
+                                                
+                                                <android.widget.LinearLayout index="0" package="com.ubercab" class="android.widget.LinearLayout" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[24,1029][87,1092]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                                  
+                                                  
+                                                  <android.widget.ImageView index="0" package="com.ubercab" class="android.widget.ImageView" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[41,1046][69,1074]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733"/>
+                                                  
+                                                
+                                                </android.widget.LinearLayout>
+                                                
+                                                
+                                                <android.widget.LinearLayout index="1" package="com.ubercab" class="android.widget.LinearLayout" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[111,1026][1172,1105]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="2" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                                  
+                                                  
+                                                  <android.widget.TextView index="0" package="com.ubercab" class="android.widget.TextView" text="Rua Teresina Cond. Barao Da Villa, 386" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[111,1026][562,1058]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733"/>
+                                                  
+                                                  
+                                                  <android.widget.TextView index="1" package="com.ubercab" class="android.widget.TextView" text="Adrianópolis - Manaus - AM" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[111,1058][429,1090]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="2" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733"/>
+                                                  
+                                                  
+                                                  <android.widget.FrameLayout index="2" package="com.ubercab" class="android.widget.FrameLayout" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[111,1104][1172,1105]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="3" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                                    
+                                                    
+                                                    <android.view.View index="0" package="com.ubercab" class="android.view.View" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[111,1104][1172,1105]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733"/>
+                                                    
+                                                  
+                                                  </android.widget.FrameLayout>
+                                                  
+                                                
+                                                </android.widget.LinearLayout>
+                                                
+                                              
+                                              </android.widget.Button>
+                                              
+                                            
+                                            </android.widget.FrameLayout>
+                                            
+                                            
+                                            <android.widget.FrameLayout index="7" package="com.ubercab" class="android.widget.FrameLayout" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[0,1109][1200,1206]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="8" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                              
+                                              
+                                              <android.widget.Button index="0" package="com.ubercab" class="android.widget.Button" text="" content-desc="Avenida Mario Ypiranga, 315 edificio the office, Adrianópolis - Manaus - AM" checkable="false" checked="false" clickable="true" enabled="true" focusable="true" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[0,1109][1200,1206]" displayed="true" a11y-important="true" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                                
+                                                
+                                                <android.widget.LinearLayout index="0" package="com.ubercab" class="android.widget.LinearLayout" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[24,1126][87,1189]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                                  
+                                                  
+                                                  <android.widget.ImageView index="0" package="com.ubercab" class="android.widget.ImageView" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[41,1143][69,1171]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733"/>
+                                                  
+                                                
+                                                </android.widget.LinearLayout>
+                                                
+                                                
+                                                <android.widget.LinearLayout index="1" package="com.ubercab" class="android.widget.LinearLayout" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[111,1123][1172,1202]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="2" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                                  
+                                                  
+                                                  <android.widget.TextView index="0" package="com.ubercab" class="android.widget.TextView" text="Avenida Mario Ypiranga, 315 edificio the office" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[111,1123][658,1155]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733"/>
+                                                  
+                                                  
+                                                  <android.widget.TextView index="1" package="com.ubercab" class="android.widget.TextView" text="Adrianópolis - Manaus - AM" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[111,1155][429,1187]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="2" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733"/>
+                                                  
+                                                  
+                                                  <android.widget.FrameLayout index="2" package="com.ubercab" class="android.widget.FrameLayout" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[111,1201][1172,1202]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="3" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                                    
+                                                    
+                                                    <android.view.View index="0" package="com.ubercab" class="android.view.View" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[111,1201][1172,1202]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733"/>
+                                                    
+                                                  
+                                                  </android.widget.FrameLayout>
+                                                  
+                                                
+                                                </android.widget.LinearLayout>
+                                                
+                                              
+                                              </android.widget.Button>
+                                              
+                                            
+                                            </android.widget.FrameLayout>
+                                            
+                                            
+                                            <android.widget.FrameLayout index="8" package="com.ubercab" class="android.widget.FrameLayout" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[0,1206][1200,1303]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="9" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                              
+                                              
+                                              <android.widget.Button index="0" package="com.ubercab" class="android.widget.Button" text="" content-desc="Clínica EndoNutri, av. mário ypiranga, 315 edificio the office - sala 512, Adrianópolis - Manaus - AM, 69057-000" checkable="false" checked="false" clickable="true" enabled="true" focusable="true" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[0,1206][1200,1303]" displayed="true" a11y-important="true" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                                
+                                                
+                                                <android.widget.LinearLayout index="0" package="com.ubercab" class="android.widget.LinearLayout" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[24,1223][87,1286]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                                  
+                                                  
+                                                  <android.widget.ImageView index="0" package="com.ubercab" class="android.widget.ImageView" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[41,1240][69,1268]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733"/>
+                                                  
+                                                
+                                                </android.widget.LinearLayout>
+                                                
+                                                
+                                                <android.widget.LinearLayout index="1" package="com.ubercab" class="android.widget.LinearLayout" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[111,1220][1172,1299]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="2" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                                  
+                                                  
+                                                  <android.widget.TextView index="0" package="com.ubercab" class="android.widget.TextView" text="Clínica EndoNutri" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[111,1220][319,1252]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733"/>
+                                                  
+                                                  
+                                                  <android.widget.TextView index="1" package="com.ubercab" class="android.widget.TextView" text="av. mário ypiranga, 315 edificio the office - sala 512, Adrianópolis - Manaus - AM, 69057-000" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[111,1252][1162,1284]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="2" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733"/>
+                                                  
+                                                  
+                                                  <android.widget.FrameLayout index="2" package="com.ubercab" class="android.widget.FrameLayout" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[111,1298][1172,1299]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="3" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                                    
+                                                    
+                                                    <android.view.View index="0" package="com.ubercab" class="android.view.View" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[111,1298][1172,1299]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733"/>
+                                                    
+                                                  
+                                                  </android.widget.FrameLayout>
+                                                  
+                                                
+                                                </android.widget.LinearLayout>
+                                                
+                                              
+                                              </android.widget.Button>
+                                              
+                                            
+                                            </android.widget.FrameLayout>
+                                            
+                                            
+                                            <android.widget.FrameLayout index="9" package="com.ubercab" class="android.widget.FrameLayout" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[0,1303][1200,1400]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="10" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                              
+                                              
+                                              <android.widget.Button index="0" package="com.ubercab" class="android.widget.Button" text="" content-desc="Av. Mario Ypiranga, número 315, Adrianópolis - Manaus - AM" checkable="false" checked="false" clickable="true" enabled="true" focusable="true" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[0,1303][1200,1400]" displayed="true" a11y-important="true" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                                
+                                                
+                                                <android.widget.LinearLayout index="0" package="com.ubercab" class="android.widget.LinearLayout" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[24,1320][87,1383]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                                  
+                                                  
+                                                  <android.widget.ImageView index="0" package="com.ubercab" class="android.widget.ImageView" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[41,1337][69,1365]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733"/>
+                                                  
+                                                
+                                                </android.widget.LinearLayout>
+                                                
+                                                
+                                                <android.widget.LinearLayout index="1" package="com.ubercab" class="android.widget.LinearLayout" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[111,1317][1172,1396]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="2" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                                  
+                                                  
+                                                  <android.widget.TextView index="0" package="com.ubercab" class="android.widget.TextView" text="Av. Mario Ypiranga, número 315" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[111,1317][481,1349]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733"/>
+                                                  
+                                                  
+                                                  <android.widget.TextView index="1" package="com.ubercab" class="android.widget.TextView" text="Adrianópolis - Manaus - AM" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[111,1349][429,1381]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="2" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733"/>
+                                                  
+                                                
+                                                </android.widget.LinearLayout>
+                                                
+                                              
+                                              </android.widget.Button>
+                                              
+                                            
+                                            </android.widget.FrameLayout>
+                                            
+                                          
+                                          </android.widget.LinearLayout>
+                                          
+                                        
+                                        </android.widget.ScrollView>
+                                        
+                                      
+                                      </android.widget.LinearLayout>
+                                      
+                                    
+                                    </android.widget.FrameLayout>
+                                    
+                                  
+                                  </android.widget.LinearLayout>
+                                  
+                                
+                                </android.widget.FrameLayout>
+                                
+                              
+                              </android.widget.LinearLayout>
+                              
+                            
+                            </android.view.ViewGroup>
+                            
+                            
+                            <android.view.ViewGroup index="2" package="com.ubercab" class="android.view.ViewGroup" text="" resource-id="com.ubercab:id/ub__map" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[0,0][1200,1920]" displayed="true" a11y-important="true" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                              
+                              
+                              <android.view.ViewGroup index="0" package="com.ubercab" class="android.view.ViewGroup" text="" resource-id="com.ubercab:id/annotations" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[0,0][1200,1920]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="3" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733"/>
+                              
+                              
+                              <android.widget.FrameLayout index="1" package="com.ubercab" class="android.widget.FrameLayout" text="" resource-id="com.ubercab:id/map" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[0,0][1200,1920]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                
+                                
+                                <android.widget.FrameLayout index="0" package="com.ubercab" class="android.widget.FrameLayout" text="" checkable="false" checked="false" clickable="true" enabled="true" focusable="true" focused="false" long-clickable="true" password="false" scrollable="false" selected="false" bounds="[0,0][1200,1920]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                  
+                                  
+                                  <android.view.View index="0" package="com.ubercab" class="android.view.View" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[0,0][1200,1920]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733"/>
+                                  
+                                  
+                                  <android.widget.FrameLayout index="1" package="com.ubercab" class="android.widget.FrameLayout" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[0,0][1200,1920]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="2" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                    
+                                    
+                                    <android.widget.FrameLayout index="0" package="com.ubercab" class="android.widget.FrameLayout" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[584,729][619,764]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                      
+                                      
+                                      <android.view.View index="0" package="com.ubercab" class="android.view.View" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[584,729][619,764]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733"/>
+                                      
+                                      
+                                      <android.view.View index="1" package="com.ubercab" class="android.view.View" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[584,729][619,764]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="2" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733"/>
+                                      
+                                      
+                                      <android.widget.FrameLayout index="2" package="com.ubercab" class="android.widget.FrameLayout" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[584,729][619,764]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="3" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733">
+                                        
+                                        
+                                        <android.view.View index="0" package="com.ubercab" class="android.view.View" text="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" long-clickable="false" password="false" scrollable="false" selected="false" bounds="[584,729][619,764]" displayed="true" a11y-important="false" screen-reader-focusable="false" drawing-order="1" showing-hint="false" text-entry-key="false" dismissable="false" a11y-focused="false" heading="false" live-region="0" context-clickable="false" content-invalid="false" window-id="4733"/>
+                                        
+                                      
+                                      </android.widget.FrameLayout>
+                                      
+                                    
+                                    </android.widget.FrameLayout>
+                                    
+                                  
+                                  </android.widget.FrameLayout>
+                                  
+                                
+                                </android.widget.FrameLayout>
+                                
+                              
+                              </android.widget.FrameLayout>
+                              
+                            
+                            </android.view.ViewGroup>
+                            
+                          
+                          </android.view.ViewGroup>
+                          
+                        
+                        </androidx.drawerlayout.widget.DrawerLayout>
+                        
+                      
+                      </android.view.ViewGroup>
+                      
+                    
+                    </android.view.ViewGroup>
+                    
+                  
+                  </android.view.ViewGroup>
+                  
+                
+                </android.view.ViewGroup>
+                
+              
+              </android.view.ViewGroup>
+              
+            
+            </android.view.ViewGroup>
+            
+          
+          </android.widget.FrameLayout>
+          
+        
+        </android.widget.LinearLayout>
+        
+      
+      </android.widget.FrameLayout>
+      
+    
+    </android.widget.LinearLayout>
+    
+  
+  </android.widget.FrameLayout>
+  
+
+</hierarchy>

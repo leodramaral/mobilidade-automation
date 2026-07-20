@@ -10,7 +10,6 @@ from appium.options.android import UiAutomator2Options
 from appium.webdriver import Remote as AppiumDriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.common.exceptions import StaleElementReferenceException
 from selenium.webdriver.support import expected_conditions as EC
 
 from automacoes.base import BaseAutomacao
@@ -42,19 +41,23 @@ class AutomacaoUber(BaseAutomacao):
         options.platform_name = 'Android'
         options.automation_name = 'UiAutomator2'
         options.app_package = self.app_package
-        options.app_wait_duration = 10000
+        options.app_wait_duration = 60000
         options.no_reset = True
         options.set_capability('appWaitForLaunch', False)
 
+        logger.info("Conectando ao Appium Server")
         self.driver = webdriver.Remote(self.server, options=options)
         self.device_model = self.driver.capabilities.get('deviceModel', 'desconhecido')
-        self.wait = WebDriverWait(self.driver, 5)
+        logger.info("Dispositivo conectado", device_model=self.device_model)
+        self.wait = WebDriverWait(self.driver, 20)
 
+        logger.info("Aguardando app carregar")
         try:
             self.wait.until(
                 EC.presence_of_element_located((By.XPATH, "//*[@content-desc='Para onde?']"))
             )
         except Exception:
+            logger.warning("App não abriu, tentando abrir manualmente")
             self.driver.activate_app(self.app_package)
             self.wait.until(
                 EC.presence_of_element_located((By.XPATH, "//*[@content-desc='Para onde?']"))
@@ -69,16 +72,13 @@ class AutomacaoUber(BaseAutomacao):
         )
         botao.click()
 
+        container_origem = "com.ubercab:id/ub__location_edit_search_container_pickup"
+        container_destino = "com.ubercab:id/ub__location_edit_search_container_destination"
+
         if origem:
-            origem = self._preencher_campo(
-                origem, "com.ubercab:id/ub__location_edit_search_container_pickup"
-            )
+            origem = self._preencher_campo(origem, container_origem)
 
-        time.sleep(0.5)
-
-        destino = self._preencher_campo(
-            destino, "com.ubercab:id/edit_text"
-        )
+        destino = self._preencher_campo(destino, container_destino)
 
         time.sleep(1)
 
@@ -507,22 +507,21 @@ class AutomacaoUber(BaseAutomacao):
         assert self.driver is not None
         assert self.wait is not None
 
+        logger.debug("Preenchendo campo", container_id=container_id, endereco=endereco)
+
         container = self.wait.until(
             EC.element_to_be_clickable((By.ID, container_id))
         )
         container.click()
-        time.sleep(0.5)
 
-        for tentativa_campo in range(3):
-            try:
-                campo_texto = self.driver.find_element(By.ID, "com.ubercab:id/edit_text")
-                campo_texto.clear()
-                campo_texto.send_keys(endereco)
-                break
-            except StaleElementReferenceException:
-                logger.debug("Elemento stale ao preencher campo")
-                time.sleep(0.5)
+        campo_texto = self.wait.until(
+            EC.presence_of_element_located((By.ID, "com.ubercab:id/edit_text"))
+        )
+        time.sleep(0.3)
+        campo_texto.clear()
+        campo_texto.send_keys(endereco)
 
+        logger.debug("Aguardando resultados da busca")
         container_resultados = self.wait.until(
             EC.presence_of_element_located((By.ID, "com.ubercab:id/ub__text_search_v2_results"))
         )
@@ -534,10 +533,11 @@ class AutomacaoUber(BaseAutomacao):
                     By.XPATH, ".//android.widget.Button[@content-desc]"
                 )
                 selecionado = primeiro_resultado.get_attribute("content-desc") or endereco
+                logger.debug("Clicando resultado", selecionado=selecionado[:60])
                 primeiro_resultado.click()
                 break
             except Exception as e:
-                logger.debug("Falha ao selecionar resultado", exc_info=True)
+                logger.debug("Falha ao selecionar resultado", tentativa=tentativa+1, erro=str(e)[:80])
                 time.sleep(0.5)
 
         return selecionado
