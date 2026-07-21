@@ -179,7 +179,7 @@ class GeoServico:
             or "Bairro"
         )
         if nome_local.lower() == cidade.lower():
-            nome_local = address.get("road") or nome_local
+            nome_local = address.get("road") or "Bairro"
 
         return nome_local
 
@@ -402,7 +402,11 @@ class DescobridorLocais:
         else:
             perp_lat, perp_lon = 0.707, 0.707
 
-        dist_offset_km = min(max(diametro_km * 0.20, 2.0), 6.0)
+        dist_e1 = self.geo.haversine(centro_lat, centro_lon, e1.lat, e1.lon)
+        dist_e2 = self.geo.haversine(centro_lat, centro_lon, e2.lat, e2.lon)
+        base_dist = (dist_e1 + dist_e2) / 2
+        dist_offset_km = min(max(base_dist * 0.5, 2.0), 6.0)
+
         delta_lat = perp_lat * (dist_offset_km / 111.1)
         delta_lon = perp_lon * (dist_offset_km / (111.1 * math.cos(math.radians(centro_lat))))
 
@@ -411,24 +415,45 @@ class DescobridorLocais:
         base_m2_lat = centro_lat - delta_lat
         base_m2_lon = centro_lon - delta_lon
 
-        m1_lat, m1_lon, nome_poi = self._warp_para_poi(base_m1_lat, base_m1_lon, usadas)
-        if nome_poi:
-            nome_m1 = nome_poi
-            print(f"🏘️  M1: {nome_m1} ({m1_lat}, {m1_lon}) — POI na perpendicular E1-E2")
-        else:
-            nome_m1 = self.geo.obter_bairro(m1_lat, m1_lon, cidade)
-            print(f"🏘️  M1: {nome_m1} ({m1_lat}, {m1_lon}) — eixo perpendicular E1-E2")
+        def _garantir_ponto_urbano(lat_ini: float, lon_ini: float) -> Tuple[float, float, str, str]:
+            lat, lon = lat_ini, lon_ini
+            for _ in range(5):
+                rua = self.geo.obter_rua(lat, lon)
+                bairro = self.geo.obter_bairro(lat, lon, cidade)
+                if rua:
+                    return lat, lon, bairro, rua
+                # Traz 20% mais próximo do centro
+                lat = lat + (centro_lat - lat) * 0.20
+                lon = lon + (centro_lon - lon) * 0.20
+            return lat, lon, bairro, rua
 
-        m2_lat, m2_lon, nome_poi = self._warp_para_poi(base_m2_lat, base_m2_lon, usadas)
-        if nome_poi:
-            nome_m2 = nome_poi
-            print(f"🏘️  M2: {nome_m2} ({m2_lat}, {m2_lon}) — POI na perpendicular E1-E2")
+        # M1
+        m1_lat, m1_lon, nome_poi_1 = self._warp_para_poi(base_m1_lat, base_m1_lon, usadas)
+        if nome_poi_1:
+            nome_m1 = nome_poi_1
+            rua_m1 = self.geo.obter_rua(m1_lat, m1_lon)
         else:
-            nome_m2 = self.geo.obter_bairro(m2_lat, m2_lon, cidade)
-            print(f"🏘️  M2: {nome_m2} ({m2_lat}, {m2_lon}) — eixo perpendicular E1-E2")
+            m1_lat, m1_lon, nome_m1, rua_m1 = _garantir_ponto_urbano(m1_lat, m1_lon)
 
-        rua_m1 = self.geo.obter_rua(m1_lat, m1_lon)
-        rua_m2 = self.geo.obter_rua(m2_lat, m2_lon)
+        # M2
+        usadas_m2 = usadas | {(m1_lat, m1_lon)}
+        m2_lat, m2_lon, nome_poi_2 = self._warp_para_poi(base_m2_lat, base_m2_lon, usadas_m2)
+        if nome_poi_2:
+            nome_m2 = nome_poi_2
+            rua_m2 = self.geo.obter_rua(m2_lat, m2_lon)
+        else:
+            m2_lat, m2_lon, nome_m2, rua_m2 = _garantir_ponto_urbano(m2_lat, m2_lon)
+
+        # Se os endereços completos forem idênticos, aplica um leve nudge em M2
+        if f"{nome_m1}, {rua_m1}".lower() == f"{nome_m2}, {rua_m2}".lower():
+            print("⚠️  M1 e M2 no mesmo endereço. Ajustando M2 ligeiramente...")
+            m2_lat -= 0.0045
+            m2_lon -= 0.0045
+            m2_lat, m2_lon, nome_m2, rua_m2 = _garantir_ponto_urbano(m2_lat, m2_lon)
+
+        print(f"🏘️  M1: {nome_m1} ({m1_lat:.5f}, {m1_lon:.5f}) — {rua_m1 or 'Sem rua'}")
+        print(f"🏘️  M2: {nome_m2} ({m2_lat:.5f}, {m2_lon:.5f}) — {rua_m2 or 'Sem rua'}")
+
         m1 = LocalColeta(codigo="M1", endereco=f"{nome_m1}, {rua_m1}, {cidade}, {uf}", cidade=cidade, uf=uf, lat=m1_lat, lon=m1_lon, tipo="bairro")
         m2 = LocalColeta(codigo="M2", endereco=f"{nome_m2}, {rua_m2}, {cidade}, {uf}", cidade=cidade, uf=uf, lat=m2_lat, lon=m2_lon, tipo="bairro")
         return m1, m2
