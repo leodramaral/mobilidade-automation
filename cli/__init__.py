@@ -2,7 +2,9 @@ import sys
 
 import typer
 from rich.console import Console
-from rich.prompt import IntPrompt
+from rich.prompt import IntPrompt, Prompt
+from rich.panel import Panel
+from rich.table import Table
 
 import cli.locais as locais_mod
 import cli.agendamentos as agendamentos_mod
@@ -12,9 +14,9 @@ from cli.agendador import iniciar as agendador_iniciar
 from dotenv import load_dotenv
 
 console = Console()
-app = typer.Typer(name="mobilidade", help="Monitoramento de precos de aplicativos de mobilidade")
+app = typer.Typer(name="mobilidade", help="Monitoramento de preços de aplicativos de mobilidade")
 
-locais_app = typer.Typer(help="Gerar localizacoes (C1, C2, E1, E2, M1, M2)")
+locais_app = typer.Typer(help="Gerar localizações (C1, C2, E1, E2, M1, M2)")
 agendamentos_app = typer.Typer(help="Gerar agendamentos de rotas")
 coleta_app = typer.Typer(help="Coleta imediata (agendamentos com 'quando: now')")
 agendador_app = typer.Typer(help="Agendador programado (agendamentos com datas futuras)")
@@ -46,7 +48,7 @@ def coleta_iniciar_cmd():
     try:
         coleta_iniciar()
     except KeyboardInterrupt:
-        console.print("\n[yellow]Coleta interrompida pelo usuario.[/yellow]")
+        console.print("\n[yellow]Coleta interrompida pelo usuário.[/yellow]")
         console.print("[green]Dados parciais salvos no banco.[/green]")
         raise typer.Exit(code=0)
 
@@ -58,7 +60,7 @@ def agendador_iniciar_cmd():
     try:
         agendador_iniciar()
     except KeyboardInterrupt:
-        console.print("\n[yellow]Agendador interrompido pelo usuario.[/yellow]")
+        console.print("\n[yellow]Agendador interrompido pelo usuário.[/yellow]")
         console.print("[green]Dados parciais salvos no banco.[/green]")
         raise typer.Exit(code=0)
 
@@ -76,42 +78,44 @@ def _menu_interativo() -> None:
     mostrar_banner(console, 80 if largura_ok else 60)
 
     menu_mapping = {
-        "1": ("Gerar localizacoes", locais_mod.gerar),
+        "1": ("Gerar localizações", locais_mod.gerar),
         "2": ("Gerar agendamentos", agendamentos_mod.gerar),
         "3": ("Iniciar coleta (imediata)", _executar_coleta_menu),
         "4": ("Iniciar agendador (programado)", _executar_agendador_menu),
     }
 
     while True:
-        console.print("[bold]O que deseja fazer?[/bold]")
+        table = Table(show_header=False, box=None, padding=(0, 2))
         for key, (desc, _) in menu_mapping.items():
-            console.print(f"  {key}. {desc}")
-        console.print(f"  5. Sair")
+            table.add_row(f"[bold cyan]{key}[/bold cyan]", desc)
+        table.add_row("[bold red]5[/bold red]", "Sair")
+        
+        console.print(Panel(table, title="[bold white]Menu Principal[/bold white]", border_style="cyan", expand=False))
 
         try:
-            escolha = input("> ").strip()
+            escolha = Prompt.ask("[bold]O que deseja fazer?[/bold]", choices=["1", "2", "3", "4", "5"], default="5")
         except (KeyboardInterrupt, EOFError):
-            console.print("\n[yellow]Ate logo![/yellow]")
+            console.print("\n[yellow]Até logo![/yellow]")
             sys.exit(0)
 
         if escolha == "5":
-            console.print("[yellow]Ate logo![/yellow]")
+            console.print("[yellow]Até logo![/yellow]")
             sys.exit(0)
 
         if escolha in menu_mapping:
             desc, func = menu_mapping[escolha]
-            console.print(f"\n[bold cyan]>>> {desc}[/bold cyan]")
+            console.print(f"\n[bold cyan]>>> {desc}[/bold cyan]\n")
             try:
                 func()
             except KeyboardInterrupt:
-                console.print("\n[yellow]Operacao interrompida pelo usuario.[/yellow]")
+                console.print("\n[yellow]Operação interrompida pelo usuário.[/yellow]")
             except SystemExit:
                 pass
             except Exception as e:
                 console.print(f"[red]Erro: {e}[/red]")
             console.print()
         else:
-            console.print("[red]Opcao invalida.[/red]\n")
+            console.print("[red]Opção inválida.[/red]\n")
 
 
 def _executar_coleta_menu() -> None:

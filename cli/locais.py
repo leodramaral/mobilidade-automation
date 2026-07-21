@@ -7,17 +7,20 @@ from persistencia.repositorio_banco import RepositorioBanco
 from servicos.geo import GeoServico, DescobridorLocais
 from servicos.mapa import MapaServico
 
+from rich.prompt import Prompt, Confirm
+from rich import print
+
 logger = structlog.get_logger("cli.locais")
 
 def _solicitar_cidade_uf() -> tuple[str, str]:
-    """Pede cidade e UF ao usuário via input(), com validação."""
-    while True:
-        cidade = input("Cidade: ").strip()
-        if cidade:
-            break
+    """Pede cidade e UF ao usuário via Prompt, com validação."""
+    cidade = Prompt.ask("[bold]Cidade[/bold]").strip()
+    while not cidade:
         print("⚠️  Cidade não pode ser vazia.")
+        cidade = Prompt.ask("[bold]Cidade[/bold]").strip()
+        
     while True:
-        uf = input("UF (sigla, 2 letras): ").strip().upper()
+        uf = Prompt.ask("[bold]UF (sigla, 2 letras)[/bold]").strip().upper()
         if len(uf) == 2 and uf.isalpha():
             break
         print("⚠️  UF deve ter 2 letras (ex: AP, SP, RJ).")
@@ -41,9 +44,10 @@ def gerar(cidade: str | None = None, uf: str | None = None) -> None:
         for l in locais:
             print(f"   {l.codigo} — {l.endereco} ({l.lat}, {l.lon})")
         repo.fechar()
-        resposta = input("\nDeseja usar estas localizações ou buscar novas? (1=usar / 2=buscar novas): ").strip()
-        if resposta == "1":
-            print(f"\n💡 Agora gere os agendamentos com:\n   python main.py agendamentos gerar")
+        
+        usar_existente = Confirm.ask("\nDeseja usar estas localizações existentes?", default=True)
+        if usar_existente:
+            print(f"\n💡 [bold green]Próximo passo:[/bold green] Escolha a opção [bold]2[/bold] (Gerar agendamentos) no Menu Principal.")
             return
         cache = {}
         repo = RepositorioBanco("mobilidade.db")
@@ -121,4 +125,4 @@ def gerar(cidade: str | None = None, uf: str | None = None) -> None:
     MapaServico.gerar_png(todos, caminho_mapa)
     print(f"🗺️  Mapa salvo: {caminho_mapa}")
 
-    print(f"\n💡 Agora gere os agendamentos com:\n   python main.py agendamentos gerar")
+    print(f"\n💡 [bold green]Próximo passo:[/bold green] Escolha a opção [bold]2[/bold] (Gerar agendamentos) no Menu Principal.")

@@ -3,11 +3,13 @@ import sys
 from datetime import datetime, timedelta
 
 from persistencia.repositorio_banco import RepositorioBanco
+from rich.prompt import Prompt
+from rich import print
 
 
 PRESETS_PROGRAMADOS = {
     "pico": {
-        "descricao": "horarios de pico — 08:00 centro / 16:30 bairro",
+        "descricao": "horários de pico — 08:00 centro / 16:30 bairro",
         "momentos": [
             ("08:00", "centro"),
             ("16:30", "bairro"),
@@ -67,50 +69,49 @@ def _criar_agendamento(rotas, sentido, quando, C1, C2):
 
 
 def _escolher_cidade(cidades):
-    print("\n📌 Cidades com 6 locais cadastrados:")
+    print("\n📌 [bold]Cidades com 6 locais cadastrados:[/bold]")
     for i, (cidade, uf) in enumerate(cidades, 1):
-        print(f"   {i}. {cidade}/{uf}")
+        print(f"   [cyan]{i}[/cyan]. {cidade}/{uf}")
     print()
 
-    while True:
-        try:
-            escolha = input("Escolha o numero da cidade: ").strip()
-            idx = int(escolha) - 1
-            if 0 <= idx < len(cidades):
-                return cidades[idx]
-            print(f"⚠️  Escolha um numero entre 1 e {len(cidades)}.")
-        except ValueError:
-            print("⚠️  Digite um numero valido.")
+    choices = [str(i) for i in range(1, len(cidades) + 1)]
+    escolha = Prompt.ask("Escolha o número da cidade", choices=choices)
+    idx = int(escolha) - 1
+    return cidades[idx]
 
 
 def _escolher_modo():
-    print("\nModo de geracao:")
-    print("   1. sequencial  — execucao imediata (python main.py coleta iniciar)")
-    for nome, info in PRESETS_PROGRAMADOS.items():
-        print(f"   p.{nome}  — {info['descricao']}")
-    while True:
-        escolha = input("Escolha (1 ou nome do preset): ").strip().lower()
-        if escolha == "1":
-            return ("sequencial", None)
-        if escolha in PRESETS_PROGRAMADOS:
-            return ("programado", escolha)
-        print(f"⚠️  Opcao invalida. Digite 1 ou um dos presets: {', '.join(PRESETS_PROGRAMADOS)}.")
+    print("\n[bold]Modo de geração:[/bold]")
+    print("   [cyan]1[/cyan]. Sequencial — execução imediata")
+    
+    presets = list(PRESETS_PROGRAMADOS.keys())
+    for idx, key in enumerate(presets, 2):
+        desc = PRESETS_PROGRAMADOS[key]["descricao"]
+        print(f"   [cyan]{idx}[/cyan]. Programado — {desc}")
+        
+    choices = [str(i) for i in range(1, len(presets) + 2)]
+    escolha = Prompt.ask("Escolha o modo", choices=choices)
+    
+    if escolha == "1":
+        return ("sequencial", None)
+    else:
+        preset_idx = int(escolha) - 2
+        preset_nome = presets[preset_idx]
+        return ("programado", preset_nome)
 
 
 def _escolher_sentido():
-    print("\nSentido dos trajetos:")
-    print("   1. todos (18 rotas)")
-    print("   2. so sentido centro (9 rotas, E/M→C)")
-    print("   3. so sentido bairro (9 rotas, C→E/M)")
-    while True:
-        escolha = input("Escolha (1, 2 ou 3): ").strip()
-        if escolha == "1":
-            return ["centro", "bairro"]
-        if escolha == "2":
-            return ["centro"]
-        if escolha == "3":
-            return ["bairro"]
-        print("⚠️  Digite 1, 2 ou 3.")
+    print("\n[bold]Sentido dos trajetos:[/bold]")
+    print("   [cyan]1[/cyan]. todos (18 rotas)")
+    print("   [cyan]2[/cyan]. só sentido centro (9 rotas, E/M→C)")
+    print("   [cyan]3[/cyan]. só sentido bairro (9 rotas, C→E/M)")
+    
+    escolha = Prompt.ask("Escolha o sentido", choices=["1", "2", "3"])
+    if escolha == "1":
+        return ["centro", "bairro"]
+    if escolha == "2":
+        return ["centro"]
+    return ["bairro"]
 
 
 def gerar() -> None:
@@ -121,7 +122,7 @@ def gerar() -> None:
 
     if not cidades:
         print("❌ Nenhuma cidade com 6 locais cadastrados encontrada.")
-        print("   Execute primeiro: python main.py locais gerar")
+        print("   Por favor, escolha a opção [bold]1[/bold] (Gerar localizações) no Menu Principal primeiro.")
         sys.exit(1)
 
     cidade, uf = _escolher_cidade(cidades) if len(cidades) > 1 else cidades[0]
@@ -133,15 +134,15 @@ def gerar() -> None:
     repo.fechar()
 
     if len(locais) != 6:
-        print(f"❌ Sao necessarios 6 locais cadastrados para {cidade}/{uf}, mas ha {len(locais)}.")
-        print(f"   Execute primeiro: python main.py locais gerar")
+        print(f"❌ [bold red]São necessários[/bold red] 6 locais cadastrados para {cidade}/{uf}, mas há {len(locais)}.")
+        print("   Por favor, escolha a opção [bold]1[/bold] (Gerar localizações) no Menu Principal primeiro.")
         sys.exit(1)
 
     if modo == "sequencial":
         sentidos = _escolher_sentido()
         labels = {"centro": "E/M→C", "bairro": "C→E/M"}
         sentido_str = " + ".join(labels[s] for s in sentidos)
-        print(f"\n▶️  Modo SEQUENCIAL — {sentido_str}")
+        print(f"\n▶️  Modo [bold cyan]SEQUENCIAL[/bold cyan] — {sentido_str}")
 
         C1 = next(l for l in locais if l.codigo == "C1")
         C2 = next(l for l in locais if l.codigo == "C2")
@@ -168,8 +169,13 @@ def gerar() -> None:
     with open("agendamentos.json", "w", encoding="utf-8") as f:
         json.dump({"agendamentos": agendamentos}, f, ensure_ascii=False, indent=2)
 
-    print(f"\n📋 {len(agendamentos)} agendamentos gerados em agendamentos.json")
+    print(f"\n📋 [bold green]{len(agendamentos)} agendamentos gerados[/bold green] em [cyan]agendamentos.json[/cyan]")
     for a in agendamentos:
         o = a["config_override"]["origem"]
         d = a["config_override"]["destino"]
         print(f"   {a['quando']}  {o} → {d}")
+
+    if modo == "sequencial":
+        print(f"\n💡 [bold green]Próximo passo:[/bold green] Escolha a opção [bold]3[/bold] (Iniciar coleta (imediata)) no Menu Principal.")
+    else:
+        print(f"\n💡 [bold green]Próximo passo:[/bold green] Escolha a opção [bold]4[/bold] (Iniciar agendador (programado)) no Menu Principal.")

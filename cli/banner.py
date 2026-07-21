@@ -13,7 +13,7 @@ def mostrar(console, largura: int) -> None:
 
     if shutil.get_terminal_size().columns >= 70:
         console.print(f"[bold cyan]{BANNER}[/bold cyan]")
-        console.print("[dim]monitoramento de precos aplicativos de mobilidade            "
+        console.print("[dim]monitoramento de preços de aplicativos de mobilidade            "
                       f"v{VERSAO}[/dim]\n")
     else:
         console.print(f"[bold cyan]>>> MOBILIDADE AUTOMATION[/bold cyan]  "
