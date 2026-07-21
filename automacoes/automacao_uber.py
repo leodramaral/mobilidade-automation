@@ -86,6 +86,13 @@ class AutomacaoUber(BaseAutomacao):
             )
         except Exception:
             logger.debug("Timeout esperando preço")
+            try:
+                page_source = self.driver.page_source
+                if "Nenhuma viagem disponível" in page_source:
+                    logger.info("Nenhuma viagem disponível no Uber. Ignorando esta coleta.")
+                    return []
+            except Exception as e:
+                logger.debug("Erro ao verificar mensagem de nenhuma viagem disponível", erro=str(e))
 
         categorias_para_extrair = {}
         resultados = []
