@@ -68,50 +68,74 @@ def _criar_agendamento(rotas, sentido, quando, C1, C2):
     return agendamentos
 
 
-def _escolher_cidade(cidades):
-    print("\n📌 [bold]Cidades com 6 locais cadastrados:[/bold]")
-    for i, (cidade, uf) in enumerate(cidades, 1):
-        print(f"   [cyan]{i}[/cyan]. {cidade}/{uf}")
-    print()
+import inquirer
 
-    choices = [str(i) for i in range(1, len(cidades) + 1)]
-    escolha = Prompt.ask("Escolha o número da cidade", choices=choices)
-    idx = int(escolha) - 1
-    return cidades[idx]
+def _escolher_cidade(cidades):
+    opcoes = [f"{cidade}/{uf}" for cidade, uf in cidades]
+    opcoes_map = {f"{cidade}/{uf}": (cidade, uf) for cidade, uf in cidades}
+    
+    pergunta = [
+        inquirer.List(
+            "cidade",
+            message="Escolha a cidade para gerar agendamentos",
+            choices=opcoes,
+        )
+    ]
+    respostas = inquirer.prompt(pergunta)
+    if not respostas:
+        sys.exit(0)
+    return opcoes_map[respostas["cidade"]]
 
 
 def _escolher_modo():
-    print("\n[bold]Modo de geração:[/bold]")
-    print("   [cyan]1[/cyan]. Sequencial — execução imediata")
-    
+    opcoes = ["Sequencial — execução imediata"]
     presets = list(PRESETS_PROGRAMADOS.keys())
-    for idx, key in enumerate(presets, 2):
+    for key in presets:
         desc = PRESETS_PROGRAMADOS[key]["descricao"]
-        print(f"   [cyan]{idx}[/cyan]. Programado — {desc}")
+        opcoes.append(f"Programado — {desc}")
         
-    choices = [str(i) for i in range(1, len(presets) + 2)]
-    escolha = Prompt.ask("Escolha o modo", choices=choices)
-    
-    if escolha == "1":
+    pergunta = [
+        inquirer.List(
+            "modo",
+            message="Escolha o modo de geração",
+            choices=opcoes,
+        )
+    ]
+    respostas = inquirer.prompt(pergunta)
+    if not respostas:
+        sys.exit(0)
+        
+    escolha = respostas["modo"]
+    if escolha.startswith("Sequencial"):
         return ("sequencial", None)
     else:
-        preset_idx = int(escolha) - 2
-        preset_nome = presets[preset_idx]
-        return ("programado", preset_nome)
+        for key in presets:
+            desc = PRESETS_PROGRAMADOS[key]["descricao"]
+            if desc in escolha:
+                return ("programado", key)
+        return ("sequencial", None)
 
 
 def _escolher_sentido():
-    print("\n[bold]Sentido dos trajetos:[/bold]")
-    print("   [cyan]1[/cyan]. todos (18 rotas)")
-    print("   [cyan]2[/cyan]. só sentido centro (9 rotas, E/M→C)")
-    print("   [cyan]3[/cyan]. só sentido bairro (9 rotas, C→E/M)")
+    opcoes = {
+        "todos (18 rotas)": ["centro", "bairro"],
+        "só sentido centro (9 rotas, E/M→C)": ["centro"],
+        "só sentido bairro (9 rotas, C→E/M)": ["bairro"]
+    }
     
-    escolha = Prompt.ask("Escolha o sentido", choices=["1", "2", "3"])
-    if escolha == "1":
-        return ["centro", "bairro"]
-    if escolha == "2":
-        return ["centro"]
-    return ["bairro"]
+    pergunta = [
+        inquirer.List(
+            "sentido",
+            message="Escolha o sentido dos trajetos",
+            choices=list(opcoes.keys()),
+        )
+    ]
+    respostas = inquirer.prompt(pergunta)
+    if not respostas:
+        sys.exit(0)
+        
+    return opcoes[respostas["sentido"]]
+
 
 
 def gerar() -> None:

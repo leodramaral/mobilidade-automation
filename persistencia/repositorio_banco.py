@@ -120,3 +120,12 @@ class RepositorioBanco(BaseRepositorio):
         )
         return [(row[0], row[1]) for row in cursor.fetchall()]
 
+    def listar_todas_cidades(self) -> List[tuple[str, str]]:
+        """Retorna pares (cidade, uf) ordenados que possuem pelo menos 1 local cadastrado."""
+        assert self.conn is not None
+        cursor = self.conn.execute(
+            "SELECT DISTINCT cidade, uf FROM locais_coleta ORDER BY cidade"
+        )
+        return [(row[0], row[1]) for row in cursor.fetchall()]
+
+

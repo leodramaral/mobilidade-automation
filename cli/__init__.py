@@ -65,6 +65,8 @@ def agendador_iniciar_cmd():
         raise typer.Exit(code=0)
 
 
+import inquirer
+
 def _menu_interativo() -> None:
     load_dotenv()
 
@@ -75,47 +77,51 @@ def _menu_interativo() -> None:
     except Exception:
         pass
 
-    mostrar_banner(console, 80 if largura_ok else 60)
-
     menu_mapping = {
-        "1": ("Gerar localizações", locais_mod.gerar),
-        "2": ("Gerar agendamentos", agendamentos_mod.gerar),
-        "3": ("Iniciar coleta (imediata)", _executar_coleta_menu),
-        "4": ("Iniciar agendador (programado)", _executar_agendador_menu),
+        "Gerenciar Cidades": locais_mod.gerenciar_cidades,
+        "Gerar agendamentos": agendamentos_mod.gerar,
+        "Iniciar coleta (imediata)": _executar_coleta_menu,
+        "Iniciar agendador (programado)": _executar_agendador_menu,
+        "Sair": sys.exit
     }
 
     while True:
-        table = Table(show_header=False, box=None, padding=(0, 2))
-        for key, (desc, _) in menu_mapping.items():
-            table.add_row(f"[bold cyan]{key}[/bold cyan]", desc)
-        table.add_row("[bold red]5[/bold red]", "Sair")
-        
-        console.print(Panel(table, title="[bold white]Menu Principal[/bold white]", border_style="cyan", expand=False))
+        mostrar_banner(console, 80 if largura_ok else 60)
+
+        perguntas = [
+            inquirer.List(
+                "opcao",
+                message="Selecione o que deseja fazer",
+                choices=list(menu_mapping.keys()),
+            )
+        ]
 
         try:
-            escolha = Prompt.ask("[bold]O que deseja fazer?[/bold]", choices=["1", "2", "3", "4", "5"], default="5")
+            respostas = inquirer.prompt(perguntas)
+            if not respostas:
+                console.print("\n[yellow]Até logo![/yellow]")
+                sys.exit(0)
+            
+            escolha = respostas["opcao"]
         except (KeyboardInterrupt, EOFError):
             console.print("\n[yellow]Até logo![/yellow]")
             sys.exit(0)
 
-        if escolha == "5":
+        if escolha == "Sair":
             console.print("[yellow]Até logo![/yellow]")
             sys.exit(0)
 
-        if escolha in menu_mapping:
-            desc, func = menu_mapping[escolha]
-            console.print(f"\n[bold cyan]>>> {desc}[/bold cyan]\n")
-            try:
-                func()
-            except KeyboardInterrupt:
-                console.print("\n[yellow]Operação interrompida pelo usuário.[/yellow]")
-            except SystemExit:
-                pass
-            except Exception as e:
-                console.print(f"[red]Erro: {e}[/red]")
-            console.print()
-        else:
-            console.print("[red]Opção inválida.[/red]\n")
+        func = menu_mapping[escolha]
+        console.print(f"\n[bold cyan]>>> {escolha}[/bold cyan]\n")
+        try:
+            func()
+        except KeyboardInterrupt:
+            console.print("\n[yellow]Operação interrompida pelo usuário.[/yellow]")
+        except SystemExit:
+            pass
+        except Exception as e:
+            console.print(f"[red]Erro: {e}[/red]")
+        console.print()
 
 
 def _executar_coleta_menu() -> None:
