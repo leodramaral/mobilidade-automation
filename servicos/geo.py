@@ -223,7 +223,7 @@ class DescobridorLocais:
                   diametro_km: float = 12.0, usadas: Set[Tuple[float, float]] = None) -> LocalColeta:
         """Descobre C1: POI nomeado e não-genérico mais próximo do centro da cidade."""
         usadas = usadas or set()
-        raio_busca = min(max(diametro_km * 0.25, 3.0), 8.0)
+        raio_busca = min(max(diametro_km * 0.25, 3.0), 5.0)
         query = self.geo.gerar_query_around(centro_lat, centro_lon, int(raio_busca * 1000))
         elementos = self.geo._overpass_query(query)
         validos = [
@@ -260,7 +260,7 @@ class DescobridorLocais:
         min_dist = max(diametro_km * 0.15, 1.0)
         print(f"   🔍 Buscando C2 a ≥{min_dist:.1f}km de C1...")
 
-        raio_busca = min(max(diametro_km * 0.25, 3.0), 8.0)
+        raio_busca = min(max(diametro_km * 0.25, 3.0), 5.0)
         query = self.geo.gerar_query_around(centro_lat, centro_lon, int(raio_busca * 1000))
         elementos = self.geo._overpass_query(query)
 
@@ -308,8 +308,8 @@ class DescobridorLocais:
         """Descobre E1 e E2: o par de POIs com maior distância absoluta entre si no raio urbano."""
         usadas = usadas or set()
 
-        raio_inicial = min(max(diametro_km * 0.25, 3.0), 8.0)
-        raio_maximo = min(max(diametro_km * 0.40, 4.5), 12.0)
+        raio_inicial = min(max(diametro_km * 0.25, 3.0), 5.0)
+        raio_maximo = min(max(diametro_km * 0.40, 4.5), 6.0)
         passo_expansao = 1.5
 
         raio_km = raio_inicial

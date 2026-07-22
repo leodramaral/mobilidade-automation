@@ -41,6 +41,10 @@ def gerar(cidade: str | None = None, uf: str | None = None, coordenadas_descarta
     locais = repo.listar_locais(cidade, uf)
     cache = {l.codigo: l for l in locais}
 
+    if coordenadas_descartadas:
+        cache = {k: v for k, v in cache.items() if (v.lat, v.lon) not in coordenadas_descartadas}
+
+
     if coordenadas_descartadas is None:
         coordenadas_descartadas = set()
 
@@ -70,8 +74,7 @@ def gerar(cidade: str | None = None, uf: str | None = None, coordenadas_descarta
                         if l_antigo:
                             coordenadas_descartadas.add((l_antigo.lat, l_antigo.lon))
                     
-                    repo.deletar_locais_especificos(cidade, uf, codigos_para_deletar)
-                    print(f"♻️  Localizações removidas: {', '.join(codigos_para_deletar)}. Elas serão recalculadas evitando os endereços antigos.")
+                    print(f"♻️  Localizações selecionadas para substituição: {', '.join(codigos_para_deletar)}. Elas serão recalculadas evitando os endereços antigos.")
                     
                     for cod in codigos_para_deletar:
                         cache.pop(cod, None)
@@ -94,35 +97,38 @@ def gerar(cidade: str | None = None, uf: str | None = None, coordenadas_descarta
     bbox = geo.buscar_bounding_box(cidade, uf)
     min_lat, max_lat, min_lon, max_lon, centro_lat, centro_lon, diametro_km = bbox
 
+    # Coordenadas a evitar
+    evitar = set(coordenadas_descartadas) if coordenadas_descartadas else set()
+
     c1 = cache.get("C1")
     if not c1:
-        c1 = descobridor.buscar_c1(min_lat, max_lat, min_lon, max_lon, centro_lat, centro_lon, cidade, uf, usadas=coordenadas_descartadas)
+        usadas_c1 = evitar | {(l.lat, l.lon) for k, l in cache.items() if k != "C1"}
+        c1 = descobridor.buscar_c1(min_lat, max_lat, min_lon, max_lon, centro_lat, centro_lon, cidade, uf, usadas=usadas_c1)
         time.sleep(1)
 
     c2 = cache.get("C2")
     if not c2:
+        usadas_c2 = evitar | {(l.lat, l.lon) for k, l in cache.items() if k != "C2"} | {(c1.lat, c1.lon)}
         c2 = descobridor.buscar_c2(min_lat, max_lat, min_lon, max_lon, centro_lat, centro_lon,
-                                   c1.lat, c1.lon, cidade, uf, diametro_km, usadas=coordenadas_descartadas)
-
-    usadas = {(c1.lat, c1.lon), (c2.lat, c2.lon)} | coordenadas_descartadas
+                                   c1.lat, c1.lon, cidade, uf, diametro_km, usadas=usadas_c2)
 
     e1 = cache.get("E1")
     e2 = cache.get("E2")
     if not e1 or not e2:
         time.sleep(3)
+        usadas_extremos = evitar | {(c1.lat, c1.lon), (c2.lat, c2.lon)} | {(l.lat, l.lon) for k, l in cache.items() if k not in ("E1", "E2")}
         e1_novo, e2_novo = descobridor.buscar_extremos(min_lat, max_lat, min_lon, max_lon,
-                                                       centro_lat, centro_lon, cidade, uf, diametro_km, usadas)
+                                                       centro_lat, centro_lon, cidade, uf, diametro_km, usadas_extremos)
         if not e1:
             e1 = e1_novo
         if not e2:
             e2 = e2_novo
 
-    usadas |= {(e1.lat, e1.lon), (e2.lat, e2.lon)}
-
     m1 = cache.get("M1")
     m2 = cache.get("M2")
     if not m1 or not m2:
-        m1_novo, m2_novo = descobridor.buscar_bairros(c1, c2, e1, e2, cidade, uf, diametro_km, usadas)
+        usadas_bairros = evitar | {(c1.lat, c1.lon), (c2.lat, c2.lon), (e1.lat, e1.lon), (e2.lat, e2.lon)} | {(l.lat, l.lon) for k, l in cache.items() if k not in ("M1", "M2")}
+        m1_novo, m2_novo = descobridor.buscar_bairros(c1, c2, e1, e2, cidade, uf, diametro_km, usadas_bairros)
         if not m1:
             m1 = m1_novo
         if not m2:
@@ -234,11 +240,7 @@ def _gerenciar_cidade_especifica(cidade: str, uf: str, locais: list[LocalColeta]
                 local_obj = opcoes_map[item]
                 coordenadas_descartadas.add((local_obj.lat, local_obj.lon))
             
-            repo = RepositorioBanco("mobilidade.db")
-            repo.inicializar()
-            repo.deletar_locais_especificos(cidade, uf, codigos_para_deletar)
-            repo.fechar()
-            print(f"♻️  Localizações removidas: {', '.join(codigos_para_deletar)}. Elas serão recalculadas evitando os endereços antigos.")
+            print(f"♻️  Localizações selecionadas para substituição: {', '.join(codigos_para_deletar)}. Elas serão recalculadas evitando os endereços antigos.")
             
             gerar(cidade, uf, coordenadas_descartadas)
         else:
