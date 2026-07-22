@@ -120,7 +120,8 @@ def _escolher_sentido():
     opcoes = {
         "todos (18 rotas)": ["centro", "bairro"],
         "só sentido centro (9 rotas, E/M→C)": ["centro"],
-        "só sentido bairro (9 rotas, C→E/M)": ["bairro"]
+        "só sentido bairro (9 rotas, C→E/M)": ["bairro"],
+        "simplificada (3 rotas aleatórias contendo todos os locais)": "simplificada"
     }
     
     pergunta = [
@@ -163,17 +164,37 @@ def gerar() -> None:
         sys.exit(1)
 
     if modo == "sequencial":
-        sentidos = _escolher_sentido()
-        labels = {"centro": "E/M→C", "bairro": "C→E/M"}
-        sentido_str = " + ".join(labels[s] for s in sentidos)
-        print(f"\n▶️  Modo [bold cyan]SEQUENCIAL[/bold cyan] — {sentido_str}")
+        escolha_sentido = _escolher_sentido()
+        if escolha_sentido == "simplificada":
+            print(f"\n▶️  Modo [bold cyan]SEQUENCIAL SIMPLIFICADO[/bold cyan]")
+            import random
+            locais_shuffled = locais.copy()
+            random.shuffle(locais_shuffled)
+            
+            agendamentos = []
+            for i in range(0, 6, 2):
+                origem = locais_shuffled[i]
+                destino = locais_shuffled[i+1]
+                agendamentos.append({
+                    "quando": "now",
+                    "config_override": {
+                        "origem": origem.endereco,
+                        "destino": destino.endereco,
+                        "openweather": {"lat": origem.lat, "lon": origem.lon},
+                    },
+                })
+        else:
+            sentidos = escolha_sentido
+            labels = {"centro": "E/M→C", "bairro": "C→E/M"}
+            sentido_str = " + ".join(labels[s] for s in sentidos)
+            print(f"\n▶️  Modo [bold cyan]SEQUENCIAL COMPLETO[/bold cyan] — {sentido_str}")
 
-        C1 = next(l for l in locais if l.codigo == "C1")
-        C2 = next(l for l in locais if l.codigo == "C2")
-        rotas = _gerar_rotas(locais)
-        agendamentos = []
-        for sentido in sentidos:
-            agendamentos.extend(_criar_agendamento(rotas, sentido, "now", C1, C2))
+            C1 = next(l for l in locais if l.codigo == "C1")
+            C2 = next(l for l in locais if l.codigo == "C2")
+            rotas = _gerar_rotas(locais)
+            agendamentos = []
+            for sentido in sentidos:
+                agendamentos.extend(_criar_agendamento(rotas, sentido, "now", C1, C2))
     else:
         preset = PRESETS_PROGRAMADOS[preset_nome]
         print(f"\n📅 Modo PROGRAMADO — {preset['descricao']}")
@@ -189,6 +210,9 @@ def gerar() -> None:
             data = datetime(amanha.year, amanha.month, amanha.day)
             quando = data.strftime(f"%Y-%m-%d {hora}")
             agendamentos.extend(_criar_agendamento(rotas, sentido, quando, C1, C2))
+
+    import random
+    random.shuffle(agendamentos)
 
     with open("agendamentos.json", "w", encoding="utf-8") as f:
         json.dump({"agendamentos": agendamentos}, f, ensure_ascii=False, indent=2)
