@@ -220,12 +220,18 @@ class DescobridorLocais:
 
     def buscar_c1(self, min_lat: float, max_lat: float, min_lon: float, max_lon: float,
                   centro_lat: float, centro_lon: float, cidade: str, uf: str,
-                  diametro_km: float = 12.0) -> LocalColeta:
+                  diametro_km: float = 12.0, usadas: Set[Tuple[float, float]] = None) -> LocalColeta:
         """Descobre C1: POI nomeado e não-genérico mais próximo do centro da cidade."""
+        usadas = usadas or set()
         raio_busca = min(max(diametro_km * 0.25, 3.0), 8.0)
         query = self.geo.gerar_query_around(centro_lat, centro_lon, int(raio_busca * 1000))
         elementos = self.geo._overpass_query(query)
-        validos = [e for e in elementos if e.get("tags", {}).get("name") and not self.geo._nome_generico(e)]
+        validos = [
+            e for e in elementos 
+            if e.get("tags", {}).get("name") 
+            and not self.geo._nome_generico(e)
+            and (round(e.get("lat", 0), 7), round(e.get("lon", 0), 7)) not in usadas
+        ]
 
         if not validos:
             print("⚠️  Nenhum local não-genérico encontrado — usando centro da cidade como C1")
@@ -248,8 +254,9 @@ class DescobridorLocais:
 
     def buscar_c2(self, min_lat: float, max_lat: float, min_lon: float, max_lon: float,
                   centro_lat: float, centro_lon: float, c1_lat: float, c1_lon: float,
-                  cidade: str, uf: str, diametro_km: float = 12.0) -> LocalColeta:
+                  cidade: str, uf: str, diametro_km: float = 12.0, usadas: Set[Tuple[float, float]] = None) -> LocalColeta:
         """Descobre C2: POI não-genérico com separação mínima de C1."""
+        usadas = usadas or set()
         min_dist = max(diametro_km * 0.15, 1.0)
         print(f"   🔍 Buscando C2 a ≥{min_dist:.1f}km de C1...")
 
@@ -263,6 +270,7 @@ class DescobridorLocais:
                 if e.get("tags", {}).get("name")
                 and not self.geo._nome_generico(e)
                 and self.geo.haversine(c1_lat, c1_lon, e.get("lat", 0), e.get("lon", 0)) >= dist_min
+                and (round(e.get("lat", 0), 7), round(e.get("lon", 0), 7)) not in usadas
             ]
             if not candidatos:
                 return None

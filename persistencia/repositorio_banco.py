@@ -7,6 +7,7 @@ import structlog
 from persistencia.base import BaseRepositorio
 from modelos.corrida import Corrida, Snapshot
 from modelos.local_coleta import LocalColeta
+from persistencia.migracoes import executar_migracoes
 
 logger = structlog.get_logger("repositorio")
 
@@ -18,43 +19,11 @@ class RepositorioBanco(BaseRepositorio):
 
     def inicializar(self) -> None:
         self.conn = sqlite3.connect(self.caminho)
-        assert self.conn is not None
-        self.conn.execute("""
-            CREATE TABLE IF NOT EXISTS snapshots (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                timestamp TEXT NOT NULL,
-                device_model TEXT,
-                app TEXT NOT NULL DEFAULT '',
-                origem TEXT NOT NULL DEFAULT '',
-                destino TEXT NOT NULL DEFAULT '',
-                temperatura REAL DEFAULT NULL,
-                condicao_tempo TEXT NOT NULL DEFAULT '',
-                payload_json TEXT NOT NULL
-            )
-        """)
-        self.conn.execute("CREATE INDEX IF NOT EXISTS idx_snapshots_timestamp ON snapshots(timestamp)")
-        self.conn.execute("CREATE INDEX IF NOT EXISTS idx_snapshots_device ON snapshots(device_model)")
-        self.conn.execute("CREATE INDEX IF NOT EXISTS idx_snapshots_app ON snapshots(app)")
-        self.conn.execute("""
-            CREATE TABLE IF NOT EXISTS locais_coleta (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                codigo TEXT NOT NULL,
-                endereco TEXT NOT NULL,
-                cidade TEXT NOT NULL,
-                uf TEXT NOT NULL,
-                lat REAL NOT NULL,
-                lon REAL NOT NULL,
-                tipo TEXT NOT NULL,
-                criado_em TEXT DEFAULT (datetime('now')),
-                UNIQUE(codigo, cidade, uf)
-            )
-        """)
-        # Migração: remove coluna 'nome' se existir (versão antiga do schema)
-        try:
-            self.conn.execute("ALTER TABLE locais_coleta DROP COLUMN nome")
-        except sqlite3.OperationalError:
-            pass
-        self.conn.commit()
+        self.conn.execute("PRAGMA journal_mode=TRUNCATE;")
+        self.conn.execute("PRAGMA foreign_keys=ON;")
+        
+        executar_migracoes(self.conn)
+
 
     def salvar(self, corridas: List[Corrida], rodada: int, device_model: str = '', temperatura: Optional[float] = None, condicao_tempo: str = '') -> None:
         if not corridas:
@@ -131,6 +100,17 @@ class RepositorioBanco(BaseRepositorio):
         self.conn.commit()
         logger.info("Locais salvos", quantidade=len(locais))
 
+    def deletar_locais_especificos(self, cidade: str, uf: str, codigos: List[str]) -> None:
+        """Exclui localizações específicas (por código) de uma determinada cidade e UF."""
+        if not codigos:
+            return
+        assert self.conn is not None
+        placeholders = ",".join("?" for _ in codigos)
+        query = f"DELETE FROM locais_coleta WHERE cidade = ? AND uf = ? AND codigo IN ({placeholders})"
+        self.conn.execute(query, [cidade, uf] + codigos)
+        self.conn.commit()
+        logger.info("Locais específicos deletados", cidade=cidade, uf=uf, codigos=codigos)
+
     def listar_cidades_completas(self) -> List[tuple[str, str]]:
         """Retorna pares (cidade, uf) que possuem exatamente 6 locais cadastrados."""
         assert self.conn is not None
@@ -139,3 +119,4 @@ class RepositorioBanco(BaseRepositorio):
             "GROUP BY cidade, uf HAVING COUNT(*) = 6 ORDER BY cidade"
         )
         return [(row[0], row[1]) for row in cursor.fetchall()]
+

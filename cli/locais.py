@@ -10,6 +10,8 @@ from servicos.mapa import MapaServico
 from rich.prompt import Prompt, Confirm
 from rich import print
 
+import inquirer
+
 logger = structlog.get_logger("cli.locais")
 
 def _solicitar_cidade_uf() -> tuple[str, str]:
@@ -39,19 +41,47 @@ def gerar(cidade: str | None = None, uf: str | None = None) -> None:
     locais = repo.listar_locais(cidade, uf)
     cache = {l.codigo: l for l in locais}
 
-    if len(cache) == 6:
-        print(f"📌 Todos os 6 locais já cadastrados para {cidade}/{uf}:")
+    coordenadas_descartadas = set()
+
+    if len(cache) > 0:
+        print(f"📌 Encontrados {len(cache)} locais já cadastrados para {cidade}/{uf}:")
         for l in locais:
             print(f"   {l.codigo} — {l.endereco} ({l.lat}, {l.lon})")
-        repo.fechar()
         
-        usar_existente = Confirm.ask("\nDeseja usar estas localizações existentes?", default=True)
-        if usar_existente:
-            print(f"\n💡 [bold green]Próximo passo:[/bold green] Escolha a opção [bold]2[/bold] (Gerar agendamentos) no Menu Principal.")
-            return
-        cache = {}
-        repo = RepositorioBanco("mobilidade.db")
-        repo.inicializar()
+        sobrescrever = Confirm.ask("\nDeseja sobrescrever ou regerar alguma destas localizações?", default=False)
+        if sobrescrever:
+            opcoes_validas = sorted(list(cache.keys()))
+            pergunta = [
+                inquirer.Checkbox(
+                    "codigos",
+                    message="Selecione quais localizações deseja SOBRESCREVER (Espaço para marcar, Enter para confirmar)",
+                    choices=opcoes_validas,
+                )
+            ]
+            respostas = inquirer.prompt(pergunta)
+            
+            if respostas and respostas.get("codigos"):
+                codigos_para_deletar = respostas["codigos"]
+                
+                # Armazena coordenadas antigas para ignorá-las na nova busca
+                for cod in codigos_para_deletar:
+                    l_antigo = cache.get(cod)
+                    if l_antigo:
+                        coordenadas_descartadas.add((l_antigo.lat, l_antigo.lon))
+                
+                repo.deletar_locais_especificos(cidade, uf, codigos_para_deletar)
+                print(f"♻️  Localizações removidas: {', '.join(codigos_para_deletar)}. Elas serão recalculadas evitando os endereços antigos.")
+                
+                # Limpa do cache local
+                for cod in codigos_para_deletar:
+                    cache.pop(cod, None)
+            else:
+                print("⚠️  Nenhuma localização selecionada para sobrescrever.")
+        else:
+            if len(cache) == 6:
+                print(f"\n💡 [bold green]Próximo passo:[/bold green] Escolha a opção [bold]2[/bold] (Gerar agendamentos) no Menu Principal.")
+                repo.fechar()
+                return
 
     for codigo in ["C1", "C2", "E1", "E2", "M1", "M2"]:
         if codigo in cache:
@@ -66,15 +96,15 @@ def gerar(cidade: str | None = None, uf: str | None = None) -> None:
 
     c1 = cache.get("C1")
     if not c1:
-        c1 = descobridor.buscar_c1(min_lat, max_lat, min_lon, max_lon, centro_lat, centro_lon, cidade, uf)
+        c1 = descobridor.buscar_c1(min_lat, max_lat, min_lon, max_lon, centro_lat, centro_lon, cidade, uf, usadas=coordenadas_descartadas)
         time.sleep(1)
 
     c2 = cache.get("C2")
     if not c2:
         c2 = descobridor.buscar_c2(min_lat, max_lat, min_lon, max_lon, centro_lat, centro_lon,
-                                   c1.lat, c1.lon, cidade, uf, diametro_km)
+                                   c1.lat, c1.lon, cidade, uf, diametro_km, usadas=coordenadas_descartadas)
 
-    usadas = {(c1.lat, c1.lon), (c2.lat, c2.lon)}
+    usadas = {(c1.lat, c1.lon), (c2.lat, c2.lon)} | coordenadas_descartadas
 
     e1 = cache.get("E1")
     e2 = cache.get("E2")
